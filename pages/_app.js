@@ -1,7 +1,12 @@
-import "../styles/globals.css";
+import Layout from "../components/Layout";
 
-function MyApp({ Component, pageProps }) {
-  return <Component {...pageProps} />;
+export default function App({ Component, pageProps }) {
+  return (
+    <Layout
+      pageTitle="Cristian Granda"
+      description="Software Engineer / Game Designer"
+    >
+      <Component {...pageProps} />
+    </Layout>
+  );
 }
-
-export default MyApp;

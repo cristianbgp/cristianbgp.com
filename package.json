@@ -10,6 +10,10 @@
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}'"
   },
   "dependencies": {
+    "@mdx-js/loader": "^1.6.21",
+    "@next/mdx": "^10.0.1",
+    "@stitches/react": "^0.0.2",
+    "date-fns": "^2.16.1",
     "next": "10.0.1",
     "react": "17.0.1",
     "react-dom": "17.0.1"

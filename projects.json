@@ -1,0 +1,39 @@
+{
+  "projects": [
+    {
+      "title": "Tambo+ cerca (web)",
+      "description": "A client react app that shows the nearest tambo+ stores",
+      "github": "https://github.com/cristianbgp/react-tambo",
+      "web": "https://tambo.cristianbgp.com"
+    },
+    {
+      "title": "Tambo+ cerca (mobile)",
+      "description": "A demo made with react-native and expo",
+      "github": "https://github.com/cristianbgp/https://github.com/cristianbgp/tambo-react-native"
+    },
+    {
+      "title": "dollarpe",
+      "description": "CLI to get dollar to peruvian sol exchange rate",
+      "github": "https://github.com/cristianbgp/dollarpe",
+      "web": "https://www.npmjs.com/package/dollarpe"
+    },
+    {
+      "title": "Kampu",
+      "description": "An app to book your favorite sports fields",
+      "github": "https://github.com/cristianbgp/Kampu",
+      "web": "https://kampu.herokuapp.com"
+    },
+    {
+      "title": "Octagonal Warning",
+      "description": "Just an octogonal warning creator, for memes only",
+      "github": "https://github.com/cristianbgp/octagonal-warning",
+      "web": "https://octagonal-warning.netlify.com"
+    },
+    {
+      "title": "Sky",
+      "description": "A simple weather app by current location",
+      "github": "https://github.com/cristianbgp/sky",
+      "web": "https://sky.cristianbgp.com"
+    }
+  ]
+}
