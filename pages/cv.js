@@ -59,6 +59,13 @@ const H1 = styled("h1", {
 const A = styled("a", {
   display: "inline-block",
   marginBottom: "10px",
+  fontSize: "15px",
+  sm: {
+    fontSize: "15px",
+  },
+  md: {
+    fontSize: "18px",
+  },
 });
 
 const NetworksContainer = styled("div", { display: "flex", flexWrap: "wrap" });
@@ -83,17 +90,21 @@ function Basics({ name, email, phone, website, summary, profiles }) {
             {email}
           </A>
         )}
-        <Space />
         {phone && (
-          <A href={`tel:${phone}`} title="Phone number">
-            {phone}
-          </A>
+          <>
+            <Space />
+            <A href={`tel:${phone}`} title="Phone number">
+              {phone}
+            </A>
+          </>
         )}
-        <Space />
         {website && (
-          <A href={website} title="Personal website">
-            {website}
-          </A>
+          <>
+            <Space />
+            <A href={website} title="Personal website">
+              {website}
+            </A>
+          </>
         )}
       </div>
       {summary && <Blockquote>{summary}</Blockquote>}
@@ -177,6 +188,7 @@ const ExperienceDate = styled("em", {
   fontWeight: 300,
   gridArea: "date",
   textAlign: "right",
+  whiteSpace: "nowrap",
 });
 
 const ExperienceBody = styled("div", {
