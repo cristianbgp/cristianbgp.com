@@ -10,8 +10,9 @@
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}'"
   },
   "dependencies": {
-    "@mdx-js/loader": "^1.6.21",
-    "@next/mdx": "^10.0.1",
+    "@mapbox/rehype-prism": "^0.6.0",
+    "@mdx-js/loader": "^1.6.22",
+    "@next/mdx": "^10.0.7",
     "@stitches/react": "^0.0.2",
     "date-fns": "^2.16.1",
     "next": "10.0.1",

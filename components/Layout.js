@@ -8,6 +8,7 @@ export default function Layout({ children, pageTitle, description }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="utf-8" />
         <meta name="Description" content={description}></meta>
+        <link rel="shortcut icon" href="/favicon.png" />
         <title>{pageTitle}</title>
       </Head>
       <style jsx global>{`
@@ -19,7 +20,7 @@ export default function Layout({ children, pageTitle, description }) {
             Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
           background: #fff;
           color: #000;
-          font-size: 1rem;
+          font-size: 20px;
         }
         h1,
         h2,
@@ -32,10 +33,18 @@ export default function Layout({ children, pageTitle, description }) {
         a {
           color: #000;
         }
+        code {
+          font-weight: 600;
+          color: #272727;
+        }
+        pre > code {
+          font-weight: 300;
+          font-size: 18px !important;
+        }
         .content {
-          max-width: 800px;
-          margin: 2rem auto;
-          padding: 0 1rem;
+          max-width: 40em;
+          margin: 4em auto;
+          padding: 0 1em;
         }
       `}</style>
       <main>
