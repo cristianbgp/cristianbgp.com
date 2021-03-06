@@ -6,6 +6,7 @@ import {
 } from "../components/icons";
 import Link from "next/link";
 import { styled } from "../stitches.config";
+import OGMetas from "../components/OGMetas";
 
 const Container = styled("div", {
   display: "flex",
@@ -40,6 +41,7 @@ const IconWrapper = styled("div", {
 export default function IndexPage() {
   return (
     <Container>
+      <OGMetas />
       <Title>Cristian Granda</Title>
       <Subtitle>Software Engineer / Game Designer</Subtitle>
       <Icons>

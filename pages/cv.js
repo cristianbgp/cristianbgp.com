@@ -1,11 +1,13 @@
 import format from "date-fns/format";
 import { Fragment } from "react";
+import OGMetas from "../components/OGMetas";
 import { styled } from "../stitches.config";
 import { resume } from "../utils/getResume";
 
 export default function CV() {
   return (
     <>
+      <OGMetas title="CV" description="Cristian Granda" extraUrl="/cv" />
       <Basics {...resume.basics} />
       {resume.skills && <Skills skills={resume.skills} />}
       {resume.work && <WorkExperience experiencies={resume.work} />}
