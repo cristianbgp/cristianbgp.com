@@ -8,7 +8,9 @@ export default function OGMetas({
 }) {
   const eTitle = encodeURIComponent(title);
   const eDescription = encodeURIComponent(description);
-  const image = `https://i.microlink.io/https%3A%2F%2Fcards.microlink.io%2F%3Fpreset%3Dcontentz%26title%3D${eTitle}%26description%3D${eDescription}`;
+  const api = "https://i.microlink.io/";
+  const cardUrl = `https://cards.microlink.io/?preset=contentz&title=${eTitle}&description=${eDescription}`;
+  const image = `${api}${encodeURIComponent(cardUrl)}`;
   const completeUrl = extraUrl ? `${url.slice(0, -1)}${extraUrl}` : url;
   const pageTitle = extraUrl ? `${title} - Cristian Granda` : title;
 
