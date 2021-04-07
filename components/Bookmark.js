@@ -8,7 +8,9 @@ export default function Bookmark({ bookmark }) {
       <article>
         <h2>
           <Link href={url}>
-            <a>{title}</a>
+            <a rel="nofollow noopener noreferrer external" target="_blank">
+              {title}
+            </a>
           </Link>
         </h2>
         <div>

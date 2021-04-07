@@ -47,28 +47,28 @@ export default function IndexPage() {
       <Icons>
         <IconWrapper>
           <Link href="https://github.com/cristianbgp">
-            <a target="_blank" rel="noreferrer">
+            <a rel="nofollow noopener noreferrer external" target="_blank">
               <GithubIcon width={32} height={32} />
             </a>
           </Link>
         </IconWrapper>
         <IconWrapper>
           <Link href="https://twitter.com/cristianbgp">
-            <a target="_blank" rel="noreferrer">
+            <a rel="nofollow noopener noreferrer external" target="_blank">
               <TwitterIcon width={32} height={32} />
             </a>
           </Link>
         </IconWrapper>
         <IconWrapper>
           <Link href="https://www.linkedin.com/in/cristianbgp/">
-            <a target="_blank" rel="noreferrer">
+            <a rel="nofollow noopener noreferrer external" target="_blank">
               <LinkedinIcon width={32} height={32} />
             </a>
           </Link>
         </IconWrapper>
         <IconWrapper>
           <Link href="mailto:cristian.granda.pastor@gmail.com">
-            <a target="_blank" rel="noreferrer">
+            <a rel="nofollow noopener noreferrer external" target="_blank">
               <GmailIcon width={32} height={32} />
             </a>
           </Link>

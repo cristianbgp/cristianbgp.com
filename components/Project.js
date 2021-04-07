@@ -14,14 +14,18 @@ export default function Project({ project }) {
         </div>
         <div>
           <Link href={github}>
-            <a>Github</a>
+            <a rel="nofollow noopener noreferrer external" target="_blank">
+              Github
+            </a>
           </Link>
 
           {web && (
             <>
               <span> - </span>
               <Link href={web}>
-                <a>Web</a>
+                <a rel="nofollow noopener noreferrer external" target="_blank">
+                  Web
+                </a>
               </Link>
             </>
           )}
