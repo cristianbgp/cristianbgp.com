@@ -34,6 +34,7 @@ const Anchor = styled("a", {
   marginRight: "1rem",
   textDecoration: "none",
   fontWeight: "300",
+  userSelect: "none",
   "&:hover": {
     textDecoration: "underline",
     cursor: "pointer",
@@ -44,6 +45,7 @@ const Title = styled("a", {
   marginRight: "1rem",
   textDecoration: "none",
   whiteSpace: "nowrap",
+  userSelect: "none",
   "&:hover": {
     cursor: "pointer",
   },

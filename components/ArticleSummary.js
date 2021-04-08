@@ -13,6 +13,10 @@ const DraftIndicator = styled("span", {
 
 const A = styled("a", {
   marginRight: "1rem",
+  "&:hover": {
+    textDecoration: "underline",
+    cursor: "pointer",
+  },
 });
 
 export default function ArticleSummary({ article }) {
