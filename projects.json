@@ -18,6 +18,12 @@
       "web": "https://golpistas.pe/"
     },
     {
+      "title": "Hommie",
+      "description": "Simple ToDo app with Chakra UI, Prisma and Next",
+      "github": "https://github.com/cristianbgp/hommie",
+      "web": "https://hommie.vercel.app/"
+    },
+    {
       "title": "Tambo+ cerca (web + api)",
       "description": "A nextjs app + api endpoint that shows the nearest tambo+ stores",
       "github": "https://github.com/cristianbgp/tambo-nextjs",
