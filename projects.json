@@ -13,6 +13,11 @@
       "web": "https://www.yovoto.pe/"
     },
     {
+      "title": "golpistas.pe",
+      "description": "A page about the coup in November 2020 in Perú",
+      "web": "https://golpistas.pe/"
+    },
+    {
       "title": "Tambo+ cerca (web + api)",
       "description": "A nextjs app + api endpoint that shows the nearest tambo+ stores",
       "github": "https://github.com/cristianbgp/tambo-nextjs",
