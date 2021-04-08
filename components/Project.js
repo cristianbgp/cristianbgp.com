@@ -20,16 +20,13 @@ export default function Project({ project }) {
               </a>
             </Link>
           )}
-
+          {github && web && <span> - </span>}
           {web && (
-            <>
-              <span> - </span>
-              <Link href={web}>
-                <a rel="nofollow noopener noreferrer external" target="_blank">
-                  Web
-                </a>
-              </Link>
-            </>
+            <Link href={web}>
+              <a rel="nofollow noopener noreferrer external" target="_blank">
+                Web
+              </a>
+            </Link>
           )}
         </div>
       </article>
