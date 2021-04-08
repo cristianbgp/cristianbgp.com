@@ -1,9 +1,21 @@
 {
   "projects": [
     {
-      "title": "Tambo+ cerca (web)",
-      "description": "A client react app that shows the nearest tambo+ stores",
-      "github": "https://github.com/cristianbgp/react-tambo",
+      "title": "Busco Candidato",
+      "description": "A series of questions to get you to match you with a candidate from the 2021 Peruvian election",
+      "github": "https://github.com/ableco/tinder-politico",
+      "web": "https://match.yovoto.pe/"
+    },
+    {
+      "title": "YoVoto.pe",
+      "description": "A nextjs app that shows collected data about the candidates from the 2021 Peruvian election",
+      "github": "https://github.com/ableco/politicalhub-client",
+      "web": "https://www.yovoto.pe/"
+    },
+    {
+      "title": "Tambo+ cerca (web + api)",
+      "description": "A nextjs app + api endpoint that shows the nearest tambo+ stores",
+      "github": "https://github.com/cristianbgp/tambo-nextjs",
       "web": "https://tambo.cristianbgp.com"
     },
     {
@@ -18,10 +30,15 @@
       "web": "https://www.npmjs.com/package/dollarpe"
     },
     {
+      "title": "dollarpe electron menubar",
+      "description": "An electron menubar app that shows dollar to peruvian sol exchange rate",
+      "github": "https://github.com/cristianbgp/electron-dollarpe"
+    },
+    {
       "title": "Kampu",
       "description": "An app to book your favorite sports fields",
       "github": "https://github.com/cristianbgp/Kampu",
-      "web": "https://kampu.herokuapp.com"
+      "web": "https://kampu.app"
     },
     {
       "title": "Octagonal Warning",
