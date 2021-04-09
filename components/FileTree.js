@@ -130,7 +130,7 @@ const FileTreeUl = styled("ul", {
 
 function FileTree(props) {
   return (
-    <Card>
+    <Card styles={{ margin: "3em 0px" }}>
       <FileTreeUl>{mapChildren(JSON.parse(props.children), 0)}</FileTreeUl>
     </Card>
   );

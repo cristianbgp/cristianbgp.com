@@ -10,6 +10,6 @@ const Div = styled("div", {
   padding: "1em 2em",
 });
 
-export default function Card({ children }) {
-  return <Div>{children}</Div>;
+export default function Card({ children, styles }) {
+  return <Div css={styles}>{children}</Div>;
 }
