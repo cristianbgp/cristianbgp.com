@@ -8,6 +8,9 @@ const Div = styled("div", {
   userSelect: "none",
   margin: "1.5em -2em 3em",
   padding: "1em 2em",
+  "&:hover": {
+    boxShadow: "rgb(199 199 199) 4px 4px 20px 6px",
+  },
 });
 
 export default function Card({ children, styles }) {
