@@ -33,8 +33,10 @@ export default function Layout({ children, description }) {
         nav a {
           line-break: auto;
         }
-        p a {
+        a {
           color: #000;
+        }
+        p a {
           line-break: anywhere;
         }
         p code {
