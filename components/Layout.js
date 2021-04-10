@@ -33,11 +33,11 @@ export default function Layout({ children, description }) {
         nav a {
           line-break: auto;
         }
-        a {
+        p a {
           color: #000;
           line-break: anywhere;
         }
-        code {
+        p code {
           font-weight: 600;
           color: #272727;
           line-break: anywhere;

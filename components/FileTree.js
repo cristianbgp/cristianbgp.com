@@ -43,8 +43,12 @@ function calcIndents(level) {
   return Array.from({ length: level }, (_, index) => <Indent key={index} />);
 }
 
+const Span = styled("span", {
+  fontSize: "0.9em",
+});
+
 function Name(props) {
-  return <span css={{ fontSize: "0.9em" }}>{props.children}</span>;
+  return <Span>{props.children}</Span>;
 }
 
 const IdentSpan = styled("span", {
@@ -95,7 +99,12 @@ function File(props) {
   );
 }
 
-const FolderSummary = styled("summary", {
+const FolderSummary = styled("div", {
+  display: "flex",
+  alignItems: "center",
+});
+
+const FolderSummaryContainer = styled("summary", {
   display: "flex",
   alignItems: "center",
   outline: "none",
@@ -112,11 +121,13 @@ function Folder(props) {
   return (
     <li>
       <details open={!props.close}>
-        <FolderSummary>
-          {calcIndents(props.level)}
-          <Icon kind={props.type} />
-          <Name>{props.name}</Name>
-        </FolderSummary>
+        <FolderSummaryContainer>
+          <FolderSummary>
+            {calcIndents(props.level)}
+            <Icon kind={props.type} />
+            <Name>{props.name}</Name>
+          </FolderSummary>
+        </FolderSummaryContainer>
         <FolderUl>{mapChildren(props.children, props.level + 1)}</FolderUl>
       </details>
     </li>
