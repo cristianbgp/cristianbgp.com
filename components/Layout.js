@@ -30,12 +30,17 @@ export default function Layout({ children, description }) {
         h6 {
           font-weight: 700;
         }
+        nav a {
+          line-break: auto;
+        }
         a {
           color: #000;
+          line-break: anywhere;
         }
         code {
           font-weight: 600;
           color: #272727;
+          line-break: anywhere;
         }
         pre > code {
           font-weight: 300;

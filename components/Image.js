@@ -21,7 +21,7 @@ const Figcaption = styled("figcaption", {
 
 export default function Image(props) {
   return (
-    <Card>
+    <Card styles={{ margin: "3em 0px" }}>
       <Figure>
         <Img alt={props.alt} src={props.src} {...props} />
         {props.alt && <Figcaption>{props.alt}</Figcaption>}

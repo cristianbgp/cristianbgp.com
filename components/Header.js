@@ -4,13 +4,19 @@ import { styled } from "../stitches.config";
 const HeaderContainer = styled("header", {
   background: "#fff",
   width: "auto",
-  padding: "0 2rem",
   justifyContent: "center",
   alignItems: "center",
   fontSize: "18px",
   height: "61px",
   borderBottom: "1px solid #eaeaea",
   boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.12)",
+  padding: "0 1rem",
+  sm: {
+    padding: "0 1rem",
+  },
+  md: {
+    padding: "0 2rem",
+  },
 });
 
 const HeaderWrapper = styled("div", {
