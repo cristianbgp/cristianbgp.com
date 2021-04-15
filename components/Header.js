@@ -12,10 +12,10 @@ const HeaderContainer = styled("header", {
   borderBottom: "1px solid #eaeaea",
   boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.12)",
   padding: "0 0 0 1rem",
-  sm: {
+  "@sm": {
     padding: "0 0 0 1rem",
   },
-  md: {
+  "@md": {
     padding: "0 2rem",
   },
 });

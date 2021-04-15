@@ -1,38 +1,22 @@
 import React from "react";
-import NextDocument from "next/document";
-import { css } from "../stitches.config";
+import NextDocument, { Html, Head, Main, NextScript } from "next/document";
+import { getCssString } from "../stitches.config";
 
 export default class Document extends NextDocument {
-  static async getInitialProps(ctx) {
-    const originalRenderPage = ctx.renderPage;
-
-    try {
-      let extractedStyles;
-      ctx.renderPage = () => {
-        const { styles, result } = css.getStyles(originalRenderPage);
-        extractedStyles = styles;
-        return result;
-      };
-
-      const initialProps = await NextDocument.getInitialProps(ctx);
-
-      return {
-        ...initialProps,
-        styles: (
-          <>
-            {initialProps.styles}
-
-            {extractedStyles?.map((content, index) => (
-              <style
-                key={index}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            ))}
-          </>
-        ),
-      };
-      // eslint-disable-next-line no-empty
-    } finally {
-    }
+  render() {
+    return (
+      <Html>
+        <Head>
+          <style
+            id="stitches"
+            dangerouslySetInnerHTML={{ __html: getCssString() }}
+          />
+        </Head>
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    );
   }
 }

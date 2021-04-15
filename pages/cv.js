@@ -62,10 +62,10 @@ const A = styled("a", {
   display: "inline-block",
   marginBottom: "10px",
   fontSize: "15px",
-  sm: {
+  "@sm": {
     fontSize: "15px",
   },
-  md: {
+  "@md": {
     fontSize: "18px",
   },
 });

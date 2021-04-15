@@ -1,18 +1,25 @@
-import { createStyled } from "@stitches/react";
+import { createCss } from "@stitches/react";
 
-export const { styled, css } = createStyled({
-  tokens: {
+export const {
+  styled,
+  css,
+  global,
+  keyframes,
+  getCssString,
+  theme,
+} = createCss({
+  theme: {
     fonts: {
-      $system: "system-ui",
+      system: "system-ui",
     },
     colors: {
-      $hiContrast: "hsl(206,10%,5%)",
-      $loContrast: "white",
+      hiContrast: "hsl(206,10%,5%)",
+      loContrast: "white",
     },
     fontSizes: {
-      $1: "13px",
-      $2: "15px",
-      $3: "17px",
+      1: "13px",
+      2: "15px",
+      3: "17px",
     },
   },
   utils: {
@@ -53,10 +60,10 @@ export const { styled, css } = createStyled({
       borderRadius: value,
     }),
   },
-  breakpoints: {
-    sm: (rule) => `@media (min-width: 640px) { ${rule} }`,
-    md: (rule) => `@media (min-width: 768px) { ${rule} }`,
-    lg: (rule) => `@media (min-width: 1024px) { ${rule} }`,
-    xl: (rule) => `@media (min-width: 1280px) { ${rule} }`,
+  media: {
+    sm: "(min-width: 640px)",
+    md: "(min-width: 768px)",
+    lg: "(min-width: 1024px)",
+    xl: "(min-width: 1280px)",
   },
 });
