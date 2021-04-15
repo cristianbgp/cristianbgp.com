@@ -22,7 +22,7 @@ const Title = styled("h1", {
 });
 
 const Subtitle = styled("p", {
-  fontWeight: "300",
+  fontWeight: "200",
   fontSize: "32px",
   textAlign: "center",
 });
@@ -32,7 +32,7 @@ const Icons = styled("div", {
 });
 
 const IconWrapper = styled("div", {
-  marginLeft: "9px",
+  marginLeft: "20px",
   "&:first-of-type": {
     marginLeft: "0px",
   },

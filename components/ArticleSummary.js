@@ -19,6 +19,18 @@ const A = styled("a", {
   },
 });
 
+const Time = styled("time", {
+  fontWeight: "200",
+});
+
+const Description = styled("p", {
+  fontWeight: "500",
+  borderLeftWidth: "0.25rem",
+  borderLeftColor: "#000",
+  borderLeftStyle: "solid",
+  paddingLeft: "1em",
+});
+
 export default function ArticleSummary({ article }) {
   const {
     link,
@@ -35,8 +47,8 @@ export default function ArticleSummary({ article }) {
           {!meta.published && <DraftIndicator>Draft</DraftIndicator>}
         </h2>
         <div>
-          <p>{meta.description}</p>
-          <time>{format(new Date(meta.date), "MMMM dd, yyyy")}</time>
+          <Description>{meta.description}</Description>
+          <Time>{format(new Date(meta.date), "MMMM dd, yyyy")}</Time>
         </div>
       </article>
     </>

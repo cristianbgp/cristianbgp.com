@@ -20,7 +20,7 @@ export default function Projects() {
       <h1>Projects</h1>
       <Grid>
         {projects.map((project) => (
-          <Project key={project.url} project={project} />
+          <Project key={project.title} project={project} />
         ))}
       </Grid>
     </>

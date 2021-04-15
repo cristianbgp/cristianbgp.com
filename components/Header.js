@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { styled } from "../stitches.config";
 
 const HeaderContainer = styled("header", {
@@ -10,9 +11,9 @@ const HeaderContainer = styled("header", {
   height: "61px",
   borderBottom: "1px solid #eaeaea",
   boxShadow: "0px 0px 10px 0px rgba(0, 0, 0, 0.12)",
-  padding: "0 1rem",
+  padding: "0 0 0 1rem",
   sm: {
-    padding: "0 1rem",
+    padding: "0 0 0 1rem",
   },
   md: {
     padding: "0 2rem",
@@ -58,6 +59,7 @@ const Title = styled("a", {
 });
 
 export default function Header() {
+  const router = useRouter();
   return (
     <HeaderContainer>
       <HeaderWrapper>
@@ -66,19 +68,55 @@ export default function Header() {
         </Link>
         <Nav>
           <Link href="/articles">
-            <Anchor>Articles</Anchor>
+            <Anchor
+              css={
+                router.pathname === "/articles"
+                  ? { fontWeight: "500" }
+                  : undefined
+              }
+            >
+              Articles
+            </Anchor>
           </Link>
           <Link href="/projects">
-            <Anchor>Projects</Anchor>
+            <Anchor
+              css={
+                router.pathname === "/projects"
+                  ? { fontWeight: "500" }
+                  : undefined
+              }
+            >
+              Projects
+            </Anchor>
           </Link>
           <Link href="/bookmarks">
-            <Anchor>Bookmarks</Anchor>
+            <Anchor
+              css={
+                router.pathname === "/bookmarks"
+                  ? { fontWeight: "500" }
+                  : undefined
+              }
+            >
+              Bookmarks
+            </Anchor>
           </Link>
           {/* <Link href="/uses">
-            <Anchor>Uses</Anchor>
+            <Anchor
+              css={
+                router.pathname === "/uses" ? { fontWeight: "500" } : undefined
+              }
+            >
+              Uses
+            </Anchor>
           </Link> */}
           <Link href="/cv">
-            <Anchor>CV</Anchor>
+            <Anchor
+              css={
+                router.pathname === "/cv" ? { fontWeight: "500" } : undefined
+              }
+            >
+              CV
+            </Anchor>
           </Link>
         </Nav>
       </HeaderWrapper>
