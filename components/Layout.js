@@ -19,6 +19,7 @@ export default function Layout({ children, description }) {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
             Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
           background: #fff;
+          min-height: 100vh;
           color: #000;
           font-size: 20px;
         }
@@ -52,6 +53,11 @@ export default function Layout({ children, description }) {
           max-width: 40em;
           margin: 4em auto;
           padding: 0 1em;
+          min-height: calc(100vh - 61px - 8em);
+        }
+        #next,
+        #next > main {
+          min-height: 100vh;
         }
       `}</style>
       <main>
