@@ -7,11 +7,11 @@ import {
 import Link from "next/link";
 import { styled } from "../stitches.config";
 import OGMetas from "../components/OGMetas";
+import NowPlaying from "../components/NowPlaying";
 
 const Container = styled("div", {
   display: "flex",
   flexDirection: "column",
-  justifyContent: "center",
   alignItems: "center",
 });
 
@@ -74,6 +74,7 @@ export default function IndexPage() {
           </Link>
         </IconWrapper>
       </Icons>
+      <NowPlaying />
     </Container>
   );
 }
