@@ -198,7 +198,10 @@ const ExperienceBody = styled("div", {
   gridArea: "body",
 });
 
-const ExperienceSummary = styled("p", { wordBreak: "break-word" });
+const ExperienceSummary = styled("p", {
+  wordBreak: "break-word",
+  whiteSpace: "pre-line",
+});
 
 const ExperienceHighlights = styled("ul", { marginLeft: "0px" });
 

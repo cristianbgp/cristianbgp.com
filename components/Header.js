@@ -115,7 +115,7 @@ export default function Header() {
                 router.pathname === "/cv" ? { fontWeight: "500" } : undefined
               }
             >
-              CV
+              Resume
             </Anchor>
           </Link>
         </Nav>

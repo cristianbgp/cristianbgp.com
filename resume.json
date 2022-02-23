@@ -26,16 +26,9 @@
     {
       "company": "Able",
       "position": "Software Engineer",
-      "summary": "Developing amazing projects using technologies like React, React Native and Ruby on Rails.",
+      "summary": "- Work on the implementation of high-impact features\n- Work with React, React Native, and Ruby on Rails\n- Use Jest, Rspec, and Cypress for testing\n- Be part of the engineering hiring process\n- Regular speaker and organizer of tech events to share knowledge outside the company",
       "website": "https://able.co",
-      "startDate": "2020-05-20"
-    },
-    {
-      "company": "Able",
-      "position": "Apprentice Software Engineer",
-      "website": "https://able.co",
-      "startDate": "2019-09-02",
-      "endDate": "2020-05-19"
+      "startDate": "2019-09-02"
     },
     {
       "company": "Codeable",
