@@ -24,11 +24,19 @@
   },
   "work": [
     {
+      "company": "Trudan Studios",
+      "position": "Software Engineer",
+      "summary": "Working currently on Kuroro Beasts",
+      "website": "https://kurorobeasts.com/",
+      "startDate": "2022-04-01"
+    },
+    {
       "company": "Able",
       "position": "Software Engineer",
       "summary": "- Work on the implementation of high-impact features\n- Work with React, React Native, and Ruby on Rails\n- Use Jest, Rspec, and Cypress for testing\n- Be part of the engineering hiring process\n- Regular speaker and organizer of tech events to share knowledge outside the company",
       "website": "https://able.co",
-      "startDate": "2019-09-02"
+      "startDate": "2019-09-02",
+      "endDate": "2022-03-31"
     },
     {
       "company": "Codeable",
