@@ -25,7 +25,7 @@ export default function Project({ project }) {
 
   return (
     <Card styles={{ margin: 0, padding: 0 }}>
-      <Image src={image} alt={`${title}'s image`} />
+      {image && <Image src={image} alt={`${title}'s image`} />}
       <Body>
         <H2>{title}</H2>
         <Description>{description}</Description>

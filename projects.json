@@ -3,16 +3,12 @@
     {
       "title": "Busco Candidato",
       "description": "A series of questions to get you to match you with a candidate from the 2021 Peruvian election",
-      "github": "https://github.com/ableco/tinder-politico",
-      "web": "https://match.yovoto.pe/",
-      "image": "https://match.yovoto.pe/open-graph.png"
+      "github": "https://github.com/ableco/tinder-politico"
     },
     {
       "title": "YoVoto.pe",
       "description": "A nextjs app that shows collected data about the candidates from the 2021 Peruvian election",
-      "github": "https://github.com/ableco/politicalhub-client",
-      "web": "https://www.yovoto.pe/",
-      "image": "https://www.yovoto.pe/open-graph.png"
+      "github": "https://github.com/ableco/politicalhub-client"
     },
     {
       "title": "golpistas.pe",
