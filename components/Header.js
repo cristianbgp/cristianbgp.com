@@ -78,7 +78,7 @@ export default function Header() {
               Articles
             </Anchor>
           </Link> */}
-          <Link href="/projects">
+          {/* <Link href="/projects">
             <Anchor
               css={
                 router.pathname === "/projects"
@@ -99,7 +99,7 @@ export default function Header() {
             >
               Bookmarks
             </Anchor>
-          </Link>
+          </Link> */}
           {/* <Link href="/uses">
             <Anchor
               css={
