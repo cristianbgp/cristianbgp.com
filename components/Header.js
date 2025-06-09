@@ -67,7 +67,7 @@ export default function Header() {
           <Title>Cristian Granda</Title>
         </Link>
         <Nav>
-          <Link href="/articles">
+          {/* <Link href="/articles">
             <Anchor
               css={
                 router.pathname === "/articles"
@@ -77,7 +77,7 @@ export default function Header() {
             >
               Articles
             </Anchor>
-          </Link>
+          </Link> */}
           <Link href="/projects">
             <Anchor
               css={
