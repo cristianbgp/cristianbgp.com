@@ -1,4 +1,14 @@
-import { Home, Moon, Settings, Sun, User } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  CalendarIcon,
+  CircleDollarSignIcon,
+  Home,
+  Moon,
+  NotebookTextIcon,
+  Settings,
+  Sun,
+  User,
+} from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -103,6 +113,42 @@ export function AppCommand() {
             <span>Toggle theme</span>
             <CommandShortcut>⌘I</CommandShortcut>
           </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Tools">
+          <CommandItem
+            onSelect={() => {
+              onSelect(() =>
+                window.open("https://notes.cristianbgp.com", "_blank")
+              );
+            }}
+          >
+            <NotebookTextIcon />
+            <span>Notes</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              onSelect(() =>
+                window.open("https://dollarpe.cristianbgp.com", "_blank")
+              );
+            }}
+          >
+            <CircleDollarSignIcon />
+            <span>Dollarpe</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              onSelect(() =>
+                window.open("https://holiday.cristianbgp.com", "_blank")
+              )
+            }
+          >
+            <CalendarDaysIcon />
+            <span>Holidays</span>
+          </CommandItem>
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup heading="Personal">
           <CommandItem
             hidden={location.pathname === "/"}
             onSelect={() => onSelect(() => navigate("/"))}
@@ -110,10 +156,10 @@ export function AppCommand() {
             <Home />
             <span>Home</span>
           </CommandItem>
-        </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Personal">
-          <CommandItem onSelect={() => onSelect(() => navigate("/resume"))}>
+          <CommandItem
+            hidden={location.pathname === "/resume"}
+            onSelect={() => onSelect(() => navigate("/resume"))}
+          >
             <User />
             <span>Resume</span>
           </CommandItem>
