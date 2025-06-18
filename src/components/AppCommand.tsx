@@ -1,6 +1,5 @@
 import {
   CalendarDaysIcon,
-  CalendarIcon,
   CircleDollarSignIcon,
   Home,
   Moon,
