@@ -71,24 +71,39 @@
         "React",
         "React Native",
         "Expo",
+        "SolidJS",
         "Next.js",
-        "CSS in JS",
-        "Emotion",
-        "Styled Components",
-        "Jest"
+        "Tailwind",
+        "Shadcn UI",
+        "Zustand",
+        "Tanstack Query",
+        "Jest",
+        "Testing Library"
       ]
     },
     {
       "name": "Backend Development",
-      "keywords": ["Rails", "PostgreSQL", "Redis"]
+      "keywords": [
+        "Node.js",
+        "Express",
+        "Hono",
+        "Prisma",
+        "Supabase",
+        "Drizzle",
+        ".NET",
+        "Rails",
+        "PostgreSQL",
+        "Redis",
+        "Docker"
+      ]
     },
     {
       "name": "Game Development",
-      "keywords": ["Unity", "GameMaker", "Spine", "Blender"]
+      "keywords": ["Unity", "GameMaker", "Blender"]
     },
     {
       "name": "Programming Languages",
-      "keywords": ["JavaScript", "Ruby", "C#"]
+      "keywords": ["TypeScript", "JavaScript", "C#", "Ruby"]
     }
   ],
   "languages": [

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { BubbleBackground } from "@/components/animate-ui/backgrounds/bubble";
 import { AppCommand } from "@/components/AppCommand";
 import { useTheme } from "@/components/theme-provider";
+import { isMobile } from "@/lib/utils";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const { theme } = useTheme();
@@ -11,7 +12,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <div>
       <BubbleBackground
         blur={theme === "dark" ? 0 : 40}
-        interactive
+        interactive={!isMobile()}
         colors={
           theme === "dark"
             ? {

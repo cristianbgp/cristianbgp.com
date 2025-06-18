@@ -13,19 +13,16 @@ import { useEffect, useState } from "react";
 import { useTheme } from "./theme-provider";
 import { useNavigate } from "react-router";
 import { useAppStore } from "@/stores/app-store";
-import { cn } from "@/lib/utils";
+import { cn, isApple } from "@/lib/utils";
 
 export function CommandKeyTrigger() {
   const [showCommandPrompt, setShowCommandPrompt] = useState(false);
   const { setCommandOpen } = useAppStore();
 
   const getCommandKey = () => {
-    const modifierKeyPrefix =
-      navigator.userAgent.includes("Mac") ||
-      navigator.userAgent.includes("iPhone") ||
-      navigator.userAgent.includes("iPad")
-        ? "⌘" // command key
-        : "^"; // control key
+    const modifierKeyPrefix = isApple()
+      ? "⌘" // command key
+      : "^"; // control key
 
     return modifierKeyPrefix;
   };
