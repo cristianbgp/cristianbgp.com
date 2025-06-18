@@ -1,0 +1,98 @@
+{
+  "basics": {
+    "name": "Cristian Granda",
+    "label": "Software Engineer",
+    "email": "cristian.granda.pastor@gmail.com",
+    "website": "https://cristianbgp.com",
+    "summary": "Software Engineer / Game Designer",
+    "location": {
+      "city": "Lima",
+      "region": "Perú"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "cristianbgp",
+        "url": "https://github.com/cristianbgp"
+      },
+      {
+        "network": "Twitter",
+        "username": "cristianbgp",
+        "url": "https://twitter.com/cristianbgp"
+      }
+    ]
+  },
+  "work": [
+    {
+      "company": "Trudan Studios",
+      "position": "Software Engineer",
+      "summary": "Working currently on Kuroro Beasts",
+      "website": "https://kurorobeasts.com/",
+      "startDate": "2022-04-01"
+    },
+    {
+      "company": "Able",
+      "position": "Software Engineer",
+      "summary": "- Work on the implementation of high-impact features\n- Work with React, React Native, and Ruby on Rails\n- Use Jest, Rspec, and Cypress for testing\n- Be part of the engineering hiring process\n- Regular speaker and organizer of tech events to share knowledge outside the company",
+      "website": "https://able.co",
+      "startDate": "2019-09-02",
+      "endDate": "2022-03-31"
+    },
+    {
+      "company": "Codeable",
+      "position": "Student",
+      "summary": "A full time bootcamp where I get to become a Full Stack Developer by learning programming languages such as Ruby and Javascript, and by improving core skills like leadership, teamwork, assertive communication and doing effective presentations.",
+      "website": "https://codeable.pe",
+      "startDate": "2019-02-25",
+      "endDate": "2019-08-09"
+    },
+    {
+      "company": "Independent",
+      "position": "Game Developer",
+      "summary": "I was part of the development for some games, such as Terggia, Castle Outlaws, and Sketch Fight.",
+      "website": "https://cristianbgp.com/games",
+      "startDate": "2017-03-16",
+      "endDate": "2018-12-31"
+    }
+  ],
+  "education": [
+    {
+      "institution": "Instituto Tolouse Lautrec",
+      "area": "Game Design",
+      "studyType": "Institute",
+      "startDate": "2015-03-16",
+      "endDate": "2017-12-15"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Frontend Development",
+      "keywords": [
+        "React",
+        "React Native",
+        "Expo",
+        "Next.js",
+        "CSS in JS",
+        "Emotion",
+        "Styled Components",
+        "Jest"
+      ]
+    },
+    {
+      "name": "Backend Development",
+      "keywords": ["Rails", "PostgreSQL", "Redis"]
+    },
+    {
+      "name": "Game Development",
+      "keywords": ["Unity", "GameMaker", "Spine", "Blender"]
+    },
+    {
+      "name": "Programming Languages",
+      "keywords": ["JavaScript", "Ruby", "C#"]
+    }
+  ],
+  "languages": [
+    { "language": "Spanish", "fluency": "Native speaker" },
+    { "language": "English", "fluency": "B2" }
+  ]
+}
