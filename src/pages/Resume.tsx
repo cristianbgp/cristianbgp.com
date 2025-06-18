@@ -1,11 +1,14 @@
+import { TypingText } from "@/components/animate-ui/text/typing";
+import { CommandKeyTrigger } from "@/components/AppCommand";
 import Layout from "@/components/Layout";
 import ResumeViewer from "@/components/ResumeViewer";
 
-export default function Resume() {
+export default function ResumePage() {
   return (
     <Layout>
       <div className="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col">
-        <p className="text-4xl font-bold pointer-events-auto">Resume</p>
+        <TypingText text="Resume" className="text-4xl font-bold" cursor />
+        <CommandKeyTrigger />
         <ResumeViewer />
       </div>
     </Layout>

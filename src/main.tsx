@@ -8,7 +8,7 @@ import Resume from "./pages/Resume.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider storageKey="vite-ui-theme">
       <BrowserRouter>
         <RoutesApp />
       </BrowserRouter>

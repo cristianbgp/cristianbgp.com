@@ -12,22 +12,69 @@ import {
 import { useEffect, useState } from "react";
 import { useTheme } from "./theme-provider";
 import { useNavigate } from "react-router";
+import { useAppStore } from "@/stores/app-store";
+import { cn } from "@/lib/utils";
+
+export function CommandKeyTrigger() {
+  const [showCommandPrompt, setShowCommandPrompt] = useState(false);
+  const { setCommandOpen } = useAppStore();
+
+  const getCommandKey = () => {
+    const modifierKeyPrefix =
+      navigator.userAgent.includes("Mac") ||
+      navigator.userAgent.includes("iPhone") ||
+      navigator.userAgent.includes("iPad")
+        ? "⌘" // command key
+        : "^"; // control key
+
+    return modifierKeyPrefix;
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowCommandPrompt(true);
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <p
+      className={cn(
+        "text-muted-foreground text-sm hover:text-foreground group select-none pointer-events-auto transition-all duration-1000",
+        showCommandPrompt ? "opacity-100" : "opacity-0",
+        showCommandPrompt ? "cursor-pointer" : "cursor-default"
+      )}
+      data-state={showCommandPrompt ? "show" : "hidden"}
+      onClick={() => showCommandPrompt && setCommandOpen(true)}
+    >
+      Press{" "}
+      <kbd className="bg-muted text-muted-foreground group-hover:text-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none transition-all duration-1000">
+        <span className="text-xs">{getCommandKey()}</span>K
+      </kbd>
+    </p>
+  );
+}
 
 export function AppCommand() {
-  const [open, setOpen] = useState(false);
+  const { commandOpen, toggleCommandOpen, setCommandOpen } = useAppStore();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   const toggleTheme = () => {
-    console.log("toggleTheme", theme);
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const onSelect = (cb: () => void) => {
+    setCommandOpen(false);
+    cb();
   };
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        toggleCommandOpen();
       }
     };
 
@@ -48,12 +95,12 @@ export function AppCommand() {
   }, [theme]);
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
-          <CommandItem onSelect={toggleTheme}>
+          <CommandItem onSelect={() => onSelect(toggleTheme)}>
             <Sun className="hidden dark:block" />
             <Moon className="block dark:hidden" />
             <span>Toggle theme</span>
@@ -61,7 +108,7 @@ export function AppCommand() {
           </CommandItem>
           <CommandItem
             hidden={location.pathname === "/"}
-            onSelect={() => navigate("/")}
+            onSelect={() => onSelect(() => navigate("/"))}
           >
             <Home />
             <span>Home</span>
@@ -69,7 +116,7 @@ export function AppCommand() {
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Personal">
-          <CommandItem onSelect={() => navigate("/resume")}>
+          <CommandItem onSelect={() => onSelect(() => navigate("/resume"))}>
             <User />
             <span>Resume</span>
           </CommandItem>
