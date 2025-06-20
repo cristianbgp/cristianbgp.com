@@ -37,7 +37,7 @@ export default function ResumeViewer() {
           {basics.summary}
         </div>
         {basics.profiles && basics.profiles.length > 0 && (
-          <div className="flex flex-wrap gap-4 mt-2">
+          <div className="flex flex-wrap flex-col md:flex-row gap-2 md:gap-4 mt-2">
             {basics.profiles.map((profile) => (
               <Button asChild variant="outline" size="sm" key={profile.network}>
                 <a href={profile.url} target="_blank" rel="noopener noreferrer">
