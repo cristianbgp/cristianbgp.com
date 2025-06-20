@@ -148,20 +148,20 @@ export function AppCommand() {
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Personal">
-          <CommandItem
-            hidden={location.pathname === "/"}
-            onSelect={() => onSelect(() => navigate("/"))}
-          >
-            <Home />
-            <span>Home</span>
-          </CommandItem>
-          <CommandItem
-            hidden={location.pathname === "/resume"}
-            onSelect={() => onSelect(() => navigate("/resume"))}
-          >
-            <User />
-            <span>Resume</span>
-          </CommandItem>
+          {location.pathname !== "/" && (
+            <CommandItem onSelect={() => onSelect(() => navigate("/"))}>
+              <Home />
+              <span>Home</span>
+            </CommandItem>
+          )}
+          {location.pathname !== "/resume" && (
+            <CommandItem
+              onSelect={() => onSelect(() => navigate("/resume"))}
+            >
+              <User />
+              <span>Resume</span>
+            </CommandItem>
+          )}
           <CommandItem disabled>
             <Settings />
             <span>Settings</span>
