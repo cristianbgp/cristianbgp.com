@@ -33,6 +33,7 @@ export default function SocialLinks() {
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
+          aria-label={link.name}
         >
           <link.icon className="w-6 h-6 stroke-2 hover:scale-110 transition-all duration-300" />
         </a>

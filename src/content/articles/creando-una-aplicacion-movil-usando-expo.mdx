@@ -1,18 +1,16 @@
-import Article from "../../components/Article";
-import Image from "../../components/Image";
-import FileTree from "../../components/FileTree";
+---
+title: "Creando una aplicación móvil usando expo"
+date: "2020-05-02T01:38:25.484Z"
+published: false
+tags: ["react", "react native", "expo", "mobile"]
+lang: "es"
+---
+import { Image } from "astro:assets";
+import finalScreen from "../../assets/tambo/final-screen.png";
+import initialScreen from "../../assets/tambo/initial-screen.png";
+import FileTree from "@/components/FileTree";
 
-export const meta = {
-  title: "Creando una aplicación móvil usando expo",
-  date: "2020-05-02T01:38:25.484Z",
-  published: true,
-  tags: ["react", "react native", "expo", "mobile"],
-  lang: "es",
-};
-
-export default ({ children }) => <Article meta={meta}>{children}</Article>;
-
-<Image src="/tambo/final-screen.png" alt="Pantalla final" />
+<Image src={finalScreen} alt="Pantalla final" />
 
 Vamos a crear una aplicación móvil usando `react-native` con [Expo](https://expo.io/) tomando como base una aplicación web [https://tambo.cristianbgp.com/](https://tambo.cristianbgp.com/) hecha con [React](https://github.com/cristianbgp/react-tambo). Se trata de una aplicación que te muestra una lista de tiendas ordenadas según la cercanía.
 
@@ -40,11 +38,11 @@ expo-cli init tambo
 
 Ahora tendremos una estructura de archivos similar a
 
-<FileTree>
-  {`[
+<FileTree client:load data={[
     {
       "type": "folder",
       "name": "tambo",
+      "defaultOpen": [".expo-shared", "assets"],
       "children": [
         {
           "type": "folder",
@@ -66,12 +64,13 @@ Ahora tendremos una estructura de archivos similar a
         { "type": "file", "name": "yarn.lock" }
       ]
     }
-  ]`}
-</FileTree>
+  ]}
+  defaultOpen={["tambo"]}
+/>
 
 Podemos usar `yarn start` y seguir las indicaciones para abrir la aplicación en nuestros emuladores android y/o iOS
 
-<Image src="/tambo/initial-screen.png" alt="Pantalla inicial" />
+<Image src={initialScreen} alt="Pantalla inicial" />
 
 ## Paquetes que usaremos
 
@@ -273,10 +272,7 @@ export default function StoresList({
   refreshLocation,
   setRefreshLocation,
 }) {
-  const {
-    data: responseStores,
-    revalidate,
-  } = useSWR(
+  const { data: responseStores, revalidate } = useSWR(
     `https://tambo-api.herokuapp.com/nearest?currentLatitude=${location.coords.latitude}&currentLongitude=${location.coords.longitude}`,
     fetcher,
     { suspense: true }

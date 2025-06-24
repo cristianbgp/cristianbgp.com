@@ -1,14 +1,15 @@
-import Article from "../../components/Article";
-import Image from "../../components/Image";
-import FileTree from "../../components/FileTree";
-
-export const meta = {
-  title: "Web Scraping con NextJS API routes y puppeteer",
-  date: "2021-04-10T01:12:06.922Z",
-  published: true,
-};
-
-export default ({ children }) => <Article meta={meta}>{children}</Article>;
+---
+title: "Web Scraping con NextJS API routes y puppeteer"
+date: "2021-04-10T01:12:06.922Z"
+published: false
+tags: ["nextjs", "puppeteer", "web scraping"]
+lang: "es"
+---
+import { Image } from "astro:assets";
+import FileTree from "@/components/FileTree";
+import tamboWebpage from "../../assets/web-scraping/tambo-webpage.png";
+import tamboHtmlStructure from "../../assets/web-scraping/tambo-html-structure.png";
+import tamboEndpoint from "../../assets/web-scraping/tambo-endpoint.png";
 
 # Previamente
 
@@ -26,11 +27,11 @@ yarn add puppeteer
 
 NextJS nos permite tener endpoints simplemente creando archivos que estén dentro de `pages/api/`. En este caso creamos uno que se llame `stores.js`.
 
-<FileTree>
-  {`[
+<FileTree client:load data={[
     {
       "type": "folder",
       "name": "pages",
+      "defaultOpen": ["api"],
       "children": [
         {
           "type": "folder",
@@ -39,8 +40,9 @@ NextJS nos permite tener endpoints simplemente creando archivos que estén dentr
         }
       ]
     }
-  ]`}
-</FileTree>
+  ]}
+  defaultOpen={["pages"]}
+/>
 
 ```javascript
 import puppeteer from "puppeteer";
@@ -116,10 +118,7 @@ Luego `puppeteer` tiene una función que nos ayuda a encontrar elementos en la p
 
 Dentro de esa función empezamos a encontrar los elementos que contienen la data que queremos para almacenarla en una variable data, que es la que vamos a retornar al final en un json para nuestro endpoint.
 
-<Image
-  src="/web-scraping/tambo-webpage.png"
-  alt="Visitando la página de tambo"
-/>
+<Image src={tamboWebpage} alt="Visitando la página de tambo" />
 
 Como vemos en la imagen el div contenedor del grupo de tiendas por distrito tiene una clase generada que empieza con `styles__FaqAnswerContainer`, por lo tanto usamos el siguiente query para obtenerlos.
 
@@ -127,10 +126,7 @@ Como vemos en la imagen el div contenedor del grupo de tiendas por distrito tien
 document.querySelectorAll("[class^=styles__FaqAnswerContainer]");
 ```
 
-<Image
-  src="/web-scraping/tambo-html-structure.png"
-  alt="Estructura de distritos"
-/>
+<Image src={tamboHtmlStructure} alt="Estructura de distritos" />
 
 Cómo pueden ver la estructura en sí de las tiendas individuales está dificil de determinar debido a que no tienen un elemento que los contenga, si no que están todos dispersos dentro del mismo div. Lo primero que se me ha ocurrido hasta ahora es encontrar los elementos que tienen una clase `id-tienda` que contiene el id de la tienda y me sirve como separador entre una tienda de la siguiente.
 
@@ -170,7 +166,7 @@ Un poco complicado conseguir la data pero lo logramos 🎉.
 
 Ahora levantamos nuestra aplicación NextJS usando `yarn dev` y visitamos `http://localhost:3000/api/stores`
 
-<Image src="/web-scraping/tambo-endpoint.png" alt="Tambo stores endpoint " />
+<Image src={tamboEndpoint} alt="Tambo stores endpoint " />
 
 # Extra
 

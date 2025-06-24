@@ -1,14 +1,13 @@
-import Article from "../../components/Article";
-import FileTree from "../../components/FileTree";
-import Image from "../../components/Image";
-
-export const meta = {
-  title: "Usando hygen para generar templates",
-  date: "2021-04-09T00:00:17.069Z",
-  published: true,
-};
-
-export default ({ children }) => <Article meta={meta}>{children}</Article>;
+---
+title: "Usando hygen para generar templates"
+date: "2021-04-09T00:00:17.069Z"
+published: false
+tags: ["hygen", "templates", "generators"]
+lang: "es"
+---
+import { Image } from "astro:assets";
+import articleTemplate from "../../assets/hygen/article-template.gif";
+import FileTree from "@/components/FileTree";
 
 Lo que quería implementar era una funcionalidad que extrañaba cuando usaba [Contentz](https://github.com/contentz-tech/contentz) para éste blog, en el cual usando `contentz write` me generaba el archivo listo para empezar a escribir. Así fue como decidí usar `hygen` para obtener ésta misma funcionalidad ahora que mi blog migró a NextJS.
 
@@ -34,11 +33,11 @@ module.exports = {
 
 Ahora si creamos la carpeta `.hygen` y dentro de ella la carpeta `new` y dentro de ésta nuestro archivo template `article.ejs.t`.
 
-<FileTree>
-  {`[
+<FileTree client:load data={[
     {
       "type": "folder",
       "name": ".hygen",
+      "defaultOpen": ["new"],
       "children": [
         {
           "type": "folder",
@@ -47,8 +46,9 @@ Ahora si creamos la carpeta `.hygen` y dentro de ella la carpeta `new` y dentro 
         }
       ]
     }
-  ]`}
-</FileTree>
+  ]}
+  defaultOpen={[".hygen"]}
+/>
 
 ```javascript
 ---
@@ -130,4 +130,4 @@ yarn new:article
 
 Y nos preguntará por el nombre y descripción del artículo
 
-<Image src="/hygen/article-template.gif" alt="Generando nuestro template desde CLI" />
+<Image src={articleTemplate} alt="Generando nuestro template desde CLI" />

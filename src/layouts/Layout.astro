@@ -6,9 +6,11 @@ import { AppCommand } from "@/components/AppCommand";
 type Props = {
   title?: string;
   description?: string;
+  showBackground?: boolean;
+  image?: ImageMetadata;
 };
 
-const { title, description } = Astro.props;
+const { title, description, showBackground = true, image } = Astro.props;
 ---
 
 <script is:inline>
@@ -37,12 +39,12 @@ const { title, description } = Astro.props;
 
 <html lang="en">
   <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead title={title} description={description} image={image} />
   </head>
 
   <body>
     <main>
-      <ThemeAwareBubbleBackground client:only />
+      {showBackground && <ThemeAwareBubbleBackground client:only />}
       <slot />
       <AppCommand client:only />
     </main>

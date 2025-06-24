@@ -1,4 +1,5 @@
 import {
+  BookTextIcon,
   CalendarDaysIcon,
   CircleDollarSignIcon,
   Home,
@@ -108,7 +109,7 @@ export function AppCommand() {
   return (
     <CommandDialog open={isCommandOpen} onOpenChange={setCommandOpen}>
       <CommandInput placeholder="Type a command or search..." />
-      <CommandList>
+      <CommandList className="max-h-[340px]">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           <CommandItem onSelect={() => onSelect(toggleTheme)}>
@@ -157,6 +158,12 @@ export function AppCommand() {
             <CommandItem onSelect={() => onSelect(() => navigate("/"))}>
               <Home />
               <span>Home</span>
+            </CommandItem>
+          )}
+          {location.pathname !== "/articles" && (
+            <CommandItem onSelect={() => onSelect(() => navigate("/articles"))}>
+              <BookTextIcon />
+              <span>Articles</span>
             </CommandItem>
           )}
           {location.pathname !== "/resume" && (
