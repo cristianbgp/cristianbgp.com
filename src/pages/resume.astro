@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { CommandKeyTrigger } from "@/components/AppCommand";
+import ResumeViewer from "@/components/ResumeViewer";
+import { TypingText } from "@/components/animate-ui/text/typing";
+---
+
+<Layout>
+  <div
+    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+  >
+    <TypingText
+      text="Resume"
+      className="text-4xl font-bold"
+      cursor
+      client:load
+    />
+    <CommandKeyTrigger client:only />
+    <ResumeViewer />
+  </div>
+</Layout>

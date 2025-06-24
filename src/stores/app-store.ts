@@ -1,11 +1,23 @@
-import { create, type ExtractState } from 'zustand'
-import { combine } from 'zustand/middleware'
+import { atom } from "nanostores";
 
-export type AppState = ExtractState<typeof useAppStore>
+export const $isCommandOpen = atom(false);
 
-export const useAppStore = create(
-  combine({ commandOpen: false }, (set) => ({
-    setCommandOpen: (open: boolean) => set({ commandOpen: open }),
-    toggleCommandOpen: () => set((state) => ({ commandOpen: !state.commandOpen })),
-  })),
-)
+export function setCommandOpen(value: boolean) {
+  $isCommandOpen.set(value);
+}
+
+export function toggleCommandOpen() {
+  $isCommandOpen.set(!$isCommandOpen.get());
+}
+
+type Theme = "theme-light" | "dark" | "system";
+
+export const $theme = atom<Theme>("theme-light");
+
+export function setTheme(value: Theme) {
+  $theme.set(value);
+}
+
+export function toggleTheme() {
+  $theme.set($theme.get() === "dark" ? "theme-light" : "dark");
+}

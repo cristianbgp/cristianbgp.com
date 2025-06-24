@@ -19,14 +19,17 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { useEffect, useState } from "react";
-import { useTheme } from "./theme-provider";
-import { useNavigate } from "react-router";
-import { useAppStore } from "@/stores/app-store";
 import { cn, isApple } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
+import {
+  $isCommandOpen,
+  setCommandOpen,
+  toggleCommandOpen,
+} from "@/stores/app-store";
+import { useStore } from "@nanostores/react";
 
 export function CommandKeyTrigger() {
   const [showCommandPrompt, setShowCommandPrompt] = useState(false);
-  const { setCommandOpen } = useAppStore();
 
   const getCommandKey = () => {
     const modifierKeyPrefix = isApple()
@@ -63,12 +66,14 @@ export function CommandKeyTrigger() {
 }
 
 export function AppCommand() {
-  const { commandOpen, toggleCommandOpen, setCommandOpen } = useAppStore();
+  const isCommandOpen = useStore($isCommandOpen);
   const { theme, setTheme } = useTheme();
-  const navigate = useNavigate();
+  const navigate = (path: string) => {
+    window.location.href = path;
+  };
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(theme === "dark" ? "theme-light" : "dark");
   };
 
   const onSelect = (cb: () => void) => {
@@ -101,7 +106,7 @@ export function AppCommand() {
   }, [theme]);
 
   return (
-    <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+    <CommandDialog open={isCommandOpen} onOpenChange={setCommandOpen}>
       <CommandInput placeholder="Type a command or search..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
@@ -155,9 +160,7 @@ export function AppCommand() {
             </CommandItem>
           )}
           {location.pathname !== "/resume" && (
-            <CommandItem
-              onSelect={() => onSelect(() => navigate("/resume"))}
-            >
+            <CommandItem onSelect={() => onSelect(() => navigate("/resume"))}>
               <User />
               <span>Resume</span>
             </CommandItem>

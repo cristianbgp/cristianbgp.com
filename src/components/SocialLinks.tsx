@@ -1,5 +1,5 @@
 import { MailsIcon } from "lucide-react";
-import { GithubIcon, LinkedinIcon, XIcon } from "./icons";
+import { GithubIcon, LinkedinIcon, XIcon } from "@/components/icons";
 
 const socialLinks = [
   {
