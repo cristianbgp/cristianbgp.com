@@ -2,6 +2,7 @@
 import { ThemeAwareBubbleBackground } from "@/components/ThemeAwareBubbleBackground";
 import BaseHead from "../components/BaseHead.astro";
 import { AppCommand } from "@/components/AppCommand";
+import { Toaster } from "@/components/ui/sonner";
 
 type Props = {
   title?: string;
@@ -49,4 +50,5 @@ const { title, description, showBackground = true, image } = Astro.props;
       <AppCommand client:only />
     </main>
   </body>
+  <Toaster client:only />
 </html>

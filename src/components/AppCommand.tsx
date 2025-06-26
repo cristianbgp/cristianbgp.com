@@ -2,6 +2,7 @@ import {
   BookTextIcon,
   CalendarDaysIcon,
   CircleDollarSignIcon,
+  Code2Icon,
   Home,
   Moon,
   NotebookTextIcon,
@@ -29,16 +30,12 @@ import {
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
 
+function getCommandKey() {
+  return isApple() ? "⌘" : "^";
+}
+
 export function CommandKeyTrigger() {
   const [showCommandPrompt, setShowCommandPrompt] = useState(false);
-
-  const getCommandKey = () => {
-    const modifierKeyPrefix = isApple()
-      ? "⌘" // command key
-      : "^"; // control key
-
-    return modifierKeyPrefix;
-  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -109,14 +106,16 @@ export function AppCommand() {
   return (
     <CommandDialog open={isCommandOpen} onOpenChange={setCommandOpen}>
       <CommandInput placeholder="Type a command or search..." />
-      <CommandList className="max-h-[340px]">
+      <CommandList className="max-h-80">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
           <CommandItem onSelect={() => onSelect(toggleTheme)}>
             <Sun className="hidden dark:block" />
             <Moon className="block dark:hidden" />
             <span>Toggle theme</span>
-            <CommandShortcut>⌘I</CommandShortcut>
+            <CommandShortcut>
+              {getCommandKey()}I
+            </CommandShortcut>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
@@ -151,6 +150,14 @@ export function AppCommand() {
             <CalendarDaysIcon />
             <span>Holidays</span>
           </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              onSelect(() => navigate("/components/json-tree-viewer"))
+            }
+          >
+            <Code2Icon />
+            <span>JSON Tree Viewer</span>
+          </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Personal">
@@ -175,7 +182,9 @@ export function AppCommand() {
           <CommandItem disabled>
             <Settings />
             <span>Settings</span>
-            <CommandShortcut>⌘S</CommandShortcut>
+            <CommandShortcut>
+              {getCommandKey()}S
+            </CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
