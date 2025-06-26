@@ -91,7 +91,7 @@ function JsonNode({
     >
       <div
         className={cn(
-          "flex items-center gap-1 py-1 hover:bg-muted/50 rounded px-1 -ml-4 cursor-pointer group/property",
+          "flex items-start gap-1 py-1 hover:bg-muted/50 rounded px-1 -ml-4 cursor-pointer group/property",
           isRoot && "text-primary font-bold italic"
         )}
         onClick={isExpandable ? handleToggle : undefined}
@@ -191,7 +191,7 @@ function JsonValue({ data }: { data: any }) {
       if (data.length > TEXT_LIMIT) {
         return (
           <div
-            className="text-gray-800 dark:text-gray-200 flex-1 flex gap-1 items-center relative group cursor-pointer"
+            className="text-gray-800 dark:text-gray-200 flex-1 flex gap-1 items-start relative group cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               setIsExpanded(!isExpanded);
@@ -216,7 +216,7 @@ function JsonValue({ data }: { data: any }) {
               </Tooltip>
             )}
             {`"`}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+4px)] opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="p-1 absolute right-0 translate-x-[calc(100%+4px)] opacity-0 group-hover:opacity-100 transition-opacity">
               {isExpanded ? (
                 <ChevronUp className="h-3 w-3 text-muted-foreground" />
               ) : (

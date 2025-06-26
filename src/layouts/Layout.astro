@@ -44,8 +44,8 @@ const { title, description, showBackground = true, image } = Astro.props;
   </head>
 
   <body>
-    <main>
-      {showBackground && <ThemeAwareBubbleBackground client:only />}
+    <main class="bg-gradient-to-t from-gray-400 to-white dark:from-[#313131] dark:to-[#000000] ">
+      <!-- {showBackground && <ThemeAwareBubbleBackground client:only />} -->
       <slot />
       <AppCommand client:only />
     </main>

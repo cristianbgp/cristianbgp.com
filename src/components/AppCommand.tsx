@@ -29,6 +29,7 @@ import {
   toggleCommandOpen,
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
+import { Button } from "@/components/ui/button";
 
 function getCommandKey() {
   return isApple() ? "⌘" : "^";
@@ -46,7 +47,8 @@ export function CommandKeyTrigger() {
   }, []);
 
   return (
-    <p
+    <Button
+      variant="ghost"
       className={cn(
         "text-muted-foreground text-sm hover:text-foreground group select-none pointer-events-auto transition-all duration-1000",
         showCommandPrompt ? "opacity-100" : "opacity-0",
@@ -54,12 +56,14 @@ export function CommandKeyTrigger() {
       )}
       data-state={showCommandPrompt ? "show" : "hidden"}
       onClick={() => showCommandPrompt && setCommandOpen(true)}
+      aria-hidden={!showCommandPrompt}
+      tabIndex={showCommandPrompt ? 0 : -1}
     >
       Press{" "}
       <kbd className="bg-muted text-muted-foreground group-hover:text-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none transition-all duration-1000">
         <span className="text-xs">{getCommandKey()}</span>K
       </kbd>
-    </p>
+    </Button>
   );
 }
 
@@ -113,9 +117,7 @@ export function AppCommand() {
             <Sun className="hidden dark:block" />
             <Moon className="block dark:hidden" />
             <span>Toggle theme</span>
-            <CommandShortcut>
-              {getCommandKey()}I
-            </CommandShortcut>
+            <CommandShortcut>{getCommandKey()}I</CommandShortcut>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
@@ -182,9 +184,7 @@ export function AppCommand() {
           <CommandItem disabled>
             <Settings />
             <span>Settings</span>
-            <CommandShortcut>
-              {getCommandKey()}S
-            </CommandShortcut>
+            <CommandShortcut>{getCommandKey()}S</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
