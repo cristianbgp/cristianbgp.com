@@ -1,0 +1,213 @@
+---
+interface Profile {
+  network: string;
+  username: string;
+  url: string;
+}
+
+interface Basics {
+  name: string;
+  label: string;
+  email: string;
+  website: string;
+  summary: string;
+  location: {
+    city: string;
+    region: string;
+  };
+  profiles: Profile[];
+}
+
+interface Work {
+  company: string;
+  position: string;
+  summary: string;
+  website: string;
+  startDate: string;
+  endDate?: string;
+}
+
+interface Education {
+  institution: string;
+  area: string;
+  studyType: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface Skill {
+  name: string;
+  keywords: string[];
+}
+
+interface Language {
+  language: string;
+  fluency: string;
+}
+
+interface Resume {
+  basics: Basics;
+  work: Work[];
+  education: Education[];
+  skills: Skill[];
+  languages: Language[];
+}
+
+import resumeData from "../lib/resume.json";
+
+const { basics, work, education, skills, languages } = resumeData as Resume;
+
+function formatDate(dateStr?: string): string | null {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+}
+---
+
+<div class="max-w-2xl mx-auto p-6 space-y-10">
+  <!-- Basics -->
+  <section class="space-y-2">
+    <p class="text-3xl font-bold">{basics.name}</p>
+    <div class="text-lg text-muted-foreground">{basics.label}</div>
+    <div class="flex flex-wrap gap-4 items-center mt-2">
+      {
+        basics.email && (
+          <a
+            href={`mailto:${basics.email}`}
+            class="hover:underline font-medium text-sm"
+          >
+            {basics.email}
+          </a>
+        )
+      }
+      {
+        basics.website && (
+          <a
+            href={basics.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:underline font-medium text-sm"
+          >
+            {basics.website}
+          </a>
+        )
+      }
+    </div>
+    <!-- <div class="text-base text-muted-foreground mt-2">
+      {basics.summary}
+    </div> -->
+    {
+      basics.profiles && basics.profiles.length > 0 && (
+        <div class="flex flex-wrap flex-col md:flex-row gap-2 md:gap-4 mt-2">
+          {basics.profiles.map((profile) => (
+            <a
+              href={profile.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="px-3 bg-background hover:bg-accent font-medium text-sm inline-flex items-center justify-center whitespace-nowrap transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border shadow-xs hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-8 rounded-md"
+            >
+              {profile.network}: @{profile.username}
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </section>
+
+  <!-- Skills -->
+  {
+    skills && skills.length > 0 && (
+      <section>
+        <h2 class="text-xl font-semibold mb-2">Skills</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {skills.map((skill) => (
+            <div class="bg-muted rounded-md p-4">
+              <div class="font-medium mb-1">{skill.name}</div>
+              <div class="flex flex-wrap gap-2">
+                {skill.keywords?.map((kw: string) => (
+                  <span class="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
+                    {kw}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Work Experience -->
+  {
+    work && work.length > 0 && (
+      <section>
+        <h2 class="text-xl font-semibold mb-2">Experience</h2>
+        <div class="space-y-6">
+          {work.map((job: Work) => (
+            <div class="border-l-2 border-primary pl-4 relative">
+              <div class="absolute -left-[7px] top-2 w-3 h-3 bg-primary rounded-full" />
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between">
+                <div class="font-medium text-base">
+                  <a
+                    href={job.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="hover:underline"
+                  >
+                    {job.company}
+                  </a>
+                  {" - "}
+                  {job.position}
+                </div>
+                <div class="text-sm text-muted-foreground mt-1 sm:mt-0">
+                  {formatDate(job.startDate)}
+                  {job.endDate ? ` - ${formatDate(job.endDate)}` : " - Present"}
+                </div>
+              </div>
+              <div class="mt-2 whitespace-pre-line text-sm">{job.summary}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Education -->
+  {
+    education && education.length > 0 && (
+      <section>
+        <h2 class="text-xl font-semibold mb-2">Education</h2>
+        <div class="space-y-4">
+          {education.map((edu) => (
+            <div class="bg-muted rounded-md p-4">
+              <div class="font-medium">{edu.institution}</div>
+              <div class="text-sm text-muted-foreground">
+                {edu.area} ({edu.studyType})
+              </div>
+              <div class="text-xs text-muted-foreground mt-1">
+                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Languages -->
+  {
+    languages && languages.length > 0 && (
+      <section>
+        <h2 class="text-xl font-semibold mb-2">Languages</h2>
+        <div class="flex flex-wrap gap-4">
+          {languages.map((lang) => (
+            <div class="bg-muted rounded-md px-3 py-1 text-sm">
+              {lang.language}{" "}
+              <span class="text-muted-foreground">({lang.fluency})</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+</div>
