@@ -30,6 +30,7 @@ import {
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
 import { Button } from "@/components/ui/button";
+import { CollectionEntry } from "astro:content";
 
 function getCommandKey() {
   return isApple() ? "⌘" : "^";
@@ -67,7 +68,11 @@ export function CommandKeyTrigger() {
   );
 }
 
-export function AppCommand() {
+export function AppCommand({
+  posts,
+}: {
+  posts: CollectionEntry<"articles">[];
+}) {
   const isCommandOpen = useStore($isCommandOpen);
   const [search, setSearch] = useState("");
   const { theme, setTheme } = useTheme();
@@ -198,16 +203,21 @@ export function AppCommand() {
             <CommandShortcut>{getCommandKey()}S</CommandShortcut>
           </CommandItem>
         </CommandGroup>
-        {/* {search.length > 0 && (
+        {search.length > 0 && posts.length > 0 && (
           <CommandGroup>
-            <CommandItem
-              onSelect={() => onSelect(() => navigate("/articles/codeable"))}
-            >
-              <BookTextIcon />
-              <span>Codeable Interview</span>
-            </CommandItem>
+            {posts.map((post) => (
+              <CommandItem
+                key={post.id}
+                onSelect={() =>
+                  onSelect(() => navigate(`/articles/${post.id}`))
+                }
+              >
+                <BookTextIcon />
+                <span>{post.data.title}</span>
+              </CommandItem>
+            ))}
           </CommandGroup>
-        )} */}
+        )}
       </CommandList>
     </CommandDialog>
   );

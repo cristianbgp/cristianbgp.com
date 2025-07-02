@@ -3,6 +3,8 @@ import type { CollectionEntry } from "astro:content";
 import FormattedDate from "../components/FormattedDate.astro";
 import { Image } from "astro:assets";
 import Layout from "./Layout.astro";
+import { AlertTriangleIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 type Props = CollectionEntry<"articles">["data"];
 
@@ -15,6 +17,7 @@ const {
   tags,
   lang,
   published,
+  archived,
 } = Astro.props;
 ---
 
@@ -42,16 +45,44 @@ const {
               <FormattedDate date={date} />
               {
                 updatedDate && (
-                  <div class="last-updated-on">
+                  <div class="text-gray-600 dark:text-gray-400">
                     Last updated on <FormattedDate date={updatedDate} />
                   </div>
                 )
               }
             </div>
-            <h1>{title}</h1>
-            <hr />
+            <h1 class="text-4xl font-bold mb-0 text-foreground">{title}</h1>
+            {
+              tags?.length > 0 && (
+                <div class="flex items-center gap-2 mt-2">
+                  {tags.map((tag) => (
+                    <Badge>{tag}</Badge>
+                  ))}
+                </div>
+              )
+            }
+            {
+              archived && (
+                <div class="text-gray-600 mt-2 dark:text-gray-400 flex flex-col">
+                  <div class="flex items-center gap-2">
+                    <AlertTriangleIcon className="w-4 h-4" />
+                    <span>Archived article</span>
+                  </div>
+                  <span>
+                    This article is archived and it's not being updated.
+                  </span>
+                </div>
+              )
+            }
+            <hr
+              class="border-2 rounded-full not-prose my-2 mb-10 border-neutral-600 transition-colors duration-300 ease-in-out dark:border-neutral-400"
+            />
           </div>
-          <slot />
+          <div
+            class="prose !text-left dark:prose-invert prose-h1:font-bold prose-h1:text-xl prose-a:text-gray-600 dark:prose-a:text-gray-400 prose-p:text-justify prose-img:rounded-xl prose-headings:underline prose-blockquote:border-neutral-600 dark:prose-blockquote:border-neutral-400"
+          >
+            <slot />
+          </div>
         </div>
       </article>
     </div>

@@ -3,6 +3,7 @@ import { ThemeAwareBubbleBackground } from "@/components/ThemeAwareBubbleBackgro
 import BaseHead from "../components/BaseHead.astro";
 import { AppCommand } from "@/components/AppCommand";
 import { Toaster } from "@/components/ui/sonner";
+import { getCollection } from "astro:content";
 
 type Props = {
   title?: string;
@@ -12,6 +13,10 @@ type Props = {
 };
 
 const { title, description, showBackground = true, image } = Astro.props;
+
+const posts = (await getCollection("articles")).filter(
+  (post) => post.data.published
+);
 ---
 
 <script is:inline>
@@ -44,11 +49,12 @@ const { title, description, showBackground = true, image } = Astro.props;
   </head>
 
   <body>
-    <main class="bg-gradient-to-t from-gray-400 to-white dark:from-[#313131] dark:to-[#000000] ">
+    <main
+      class="bg-gradient-to-b to-gray-200 from-white dark:to-[#313131] dark:from-[#000000]"
+    >
       <!-- {showBackground && <ThemeAwareBubbleBackground client:only />} -->
       <slot />
-      <AppCommand client:only />
+      <AppCommand posts={posts} client:only />
     </main>
-  </body>
-  <Toaster client:only />
+  </body><Toaster client:only />
 </html>

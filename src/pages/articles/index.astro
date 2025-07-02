@@ -1,11 +1,13 @@
 ---
 import { getCollection } from "astro:content";
-import FormattedDate from "../../components/FormattedDate.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
 import Layout from "@/layouts/Layout.astro";
 import { Separator } from "@/components/ui/separator";
+import { TypingText } from "@/components/animate-ui/text/typing";
+import { cn } from "@/lib/utils";
 
 const posts = (await getCollection("articles"))
-  .filter((post) => post.data.published)
+  // .filter((post) => post.data.published && !post.data.archived)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
@@ -13,6 +15,12 @@ const posts = (await getCollection("articles"))
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
   >
+    <TypingText
+      text="Articles"
+      className="text-4xl font-bold"
+      cursor
+      client:load
+    />
     <div class="max-w-2xl mx-auto p-6 space-y-10">
       <section>
         {
@@ -25,7 +33,17 @@ const posts = (await getCollection("articles"))
             posts.map((post) => (
               <li class="flex flex-col gap-2 group">
                 <a href={`/articles/${post.id}/`}>
-                  <h4 class="title text-2xl font-bold">{post.data.title}</h4>
+                  {post.data.archived && (
+                    <p class="text-sm text-neutral-500">Archived</p>
+                  )}
+                  <h4
+                    class={cn(
+                      "title text-2xl font-bold",
+                      post.data.archived && "line-through"
+                    )}
+                  >
+                    {post.data.title}
+                  </h4>
                   <p class="date">
                     <FormattedDate date={post.data.date} />
                   </p>

@@ -13,6 +13,7 @@ const articles = defineCollection({
       published: z.boolean(),
       tags: z.array(z.string()),
       lang: z.string(),
+      archived: z.boolean().optional(),
     }),
 });
 export const collections = { articles };

@@ -12,7 +12,7 @@ function FileTreeItem({ item }: { item: FileTreeData }) {
     return (
       <Folder name={item.name} defaultOpen={item.defaultOpen}>
         {item.children?.map((child) => (
-          <FileTreeItem item={child} />
+          <FileTreeItem key={child.name} item={child} />
         ))}
       </Folder>
     );
@@ -28,9 +28,9 @@ export default function FileTree({
   defaultOpen?: string[];
 }) {
   return (
-    <Files className="max-w-[500px] w-full" defaultOpen={defaultOpen}>
+    <Files className="max-w-[500px] w-full not-prose" defaultOpen={defaultOpen}>
       {data.map((item) => (
-        <FileTreeItem item={item} />
+        <FileTreeItem key={item.name} item={item} />
       ))}
     </Files>
   );
