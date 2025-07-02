@@ -21,7 +21,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { useEffect, useState } from "react";
-import { cn, isApple } from "@/lib/utils";
+import { cn, isApple, isMobile } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import {
   $isCommandOpen,
@@ -69,6 +69,7 @@ export function CommandKeyTrigger() {
 
 export function AppCommand() {
   const isCommandOpen = useStore($isCommandOpen);
+  const [search, setSearch] = useState("");
   const { theme, setTheme } = useTheme();
   const navigate = (path: string) => {
     window.location.href = path;
@@ -108,8 +109,18 @@ export function AppCommand() {
   }, [theme]);
 
   return (
-    <CommandDialog open={isCommandOpen} onOpenChange={setCommandOpen}>
-      <CommandInput placeholder="Type a command or search..." />
+    <CommandDialog
+      open={isCommandOpen}
+      onOpenChange={setCommandOpen}
+      loop
+      onOpenAutoFocus={isMobile() ? (e) => e.preventDefault() : undefined}
+    >
+      <CommandInput
+        placeholder="Type a command or search..."
+        autoFocus={false}
+        value={search}
+        onValueChange={setSearch}
+      />
       <CommandList className="max-h-80">
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup>
@@ -187,6 +198,16 @@ export function AppCommand() {
             <CommandShortcut>{getCommandKey()}S</CommandShortcut>
           </CommandItem>
         </CommandGroup>
+        {/* {search.length > 0 && (
+          <CommandGroup>
+            <CommandItem
+              onSelect={() => onSelect(() => navigate("/articles/codeable"))}
+            >
+              <BookTextIcon />
+              <span>Codeable Interview</span>
+            </CommandItem>
+          </CommandGroup>
+        )} */}
       </CommandList>
     </CommandDialog>
   );
