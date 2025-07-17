@@ -120,6 +120,18 @@
   }
 }
 
+@utility rendering-pixelated {
+  image-rendering: pixelated;
+}
+
+@utility rendering-crisp-edges {
+  image-rendering: crisp-edges;
+}
+
+@utility rendering-auto {
+  image-rendering: auto;
+}
+
 pre {
   padding: 1rem;
   border-radius: 0.5rem;

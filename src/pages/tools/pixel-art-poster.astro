@@ -1,0 +1,21 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { CommandKeyTrigger } from "@/components/AppCommand";
+import { TypingText } from "@/components/animate-ui/text/typing";
+import PixelArtPosterBuilder from "@/components/PixelArtPosterBuilder";
+---
+
+<Layout>
+  <div
+    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+  >
+    <TypingText
+      text="Pixel Art Poster"
+      className="text-4xl font-bold"
+      cursor
+      client:load
+    />
+    <CommandKeyTrigger client:only />
+    <PixelArtPosterBuilder client:only />
+  </div>
+</Layout>

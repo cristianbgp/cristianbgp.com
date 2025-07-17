@@ -7,6 +7,7 @@ import {
   Moon,
   NotebookTextIcon,
   Settings,
+  SquareDashedMousePointerIcon,
   Sun,
   User,
 } from "lucide-react";
@@ -175,6 +176,14 @@ export function AppCommand({
           >
             <Code2Icon />
             <span>JSON Tree Viewer</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              onSelect(() => navigate("/tools/pixel-art-poster"))
+            }
+          >
+            <SquareDashedMousePointerIcon />
+            <span>Pixel Art Poster</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
