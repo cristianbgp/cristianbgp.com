@@ -40,10 +40,6 @@ interface ResizeState {
 
 export default function PixelArtPosterBuilder() {
   const [images, setImages] = useState<ImageItem[]>([]);
-  console.log(
-    "images",
-    images.map((img) => img.zIndex),
-  );
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
@@ -359,7 +355,6 @@ export default function PixelArtPosterBuilder() {
   const moveUp = useCallback((imageId: string) => {
     setImages((prev) => {
       const currentImage = prev.find((img) => img.id === imageId);
-      console.log("currentImage", currentImage);
       if (!currentImage) return prev;
 
       const higherImages = prev.filter(
@@ -383,7 +378,6 @@ export default function PixelArtPosterBuilder() {
   const moveDown = useCallback((imageId: string) => {
     setImages((prev) => {
       const currentImage = prev.find((img) => img.id === imageId);
-      console.log("currentImage", currentImage);
       if (!currentImage) return prev;
 
       const lowerImages = prev.filter(
