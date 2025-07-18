@@ -185,52 +185,43 @@ export default function PixelArtPosterBuilder() {
           prev.map((img) => {
             if (img.id !== resizeState.resizeId) return img;
 
+            // Calculate aspect ratio from original dimensions
+            const aspectRatio = img.originalWidth / img.originalHeight;
+
             let newWidth = resizeState.startSize.width;
             let newHeight = resizeState.startSize.height;
             let newX = resizeState.startImagePos.x;
             let newY = resizeState.startImagePos.y;
 
-            // Calculate new dimensions based on handle
+            // Calculate new dimensions based on handle while maintaining aspect ratio
             switch (resizeState.handle) {
               case "se": // bottom-right
                 newWidth = Math.max(20, resizeState.startSize.width + deltaX);
-                newHeight = Math.max(20, resizeState.startSize.height + deltaY);
+                newHeight = newWidth / aspectRatio;
                 break;
               case "sw": // bottom-left
                 newWidth = Math.max(20, resizeState.startSize.width - deltaX);
-                newHeight = Math.max(20, resizeState.startSize.height + deltaY);
+                newHeight = newWidth / aspectRatio;
                 newX = resizeState.startImagePos.x + deltaX;
-                if (newWidth === 20)
-                  newX =
-                    resizeState.startImagePos.x +
-                    resizeState.startSize.width -
-                    20;
+                if (newWidth === 20) {
+                  newX = resizeState.startImagePos.x + resizeState.startSize.width - 20;
+                  newHeight = 20 / aspectRatio;
+                }
                 break;
               case "ne": // top-right
                 newWidth = Math.max(20, resizeState.startSize.width + deltaX);
-                newHeight = Math.max(20, resizeState.startSize.height - deltaY);
-                newY = resizeState.startImagePos.y + deltaY;
-                if (newHeight === 20)
-                  newY =
-                    resizeState.startImagePos.y +
-                    resizeState.startSize.height -
-                    20;
+                newHeight = newWidth / aspectRatio;
+                newY = resizeState.startImagePos.y + (resizeState.startSize.height - newHeight);
                 break;
               case "nw": // top-left
                 newWidth = Math.max(20, resizeState.startSize.width - deltaX);
-                newHeight = Math.max(20, resizeState.startSize.height - deltaY);
+                newHeight = newWidth / aspectRatio;
                 newX = resizeState.startImagePos.x + deltaX;
-                newY = resizeState.startImagePos.y + deltaY;
-                if (newWidth === 20)
-                  newX =
-                    resizeState.startImagePos.x +
-                    resizeState.startSize.width -
-                    20;
-                if (newHeight === 20)
-                  newY =
-                    resizeState.startImagePos.y +
-                    resizeState.startSize.height -
-                    20;
+                newY = resizeState.startImagePos.y + (resizeState.startSize.height - newHeight);
+                if (newWidth === 20) {
+                  newX = resizeState.startImagePos.x + resizeState.startSize.width - 20;
+                  newHeight = 20 / aspectRatio;
+                }
                 break;
             }
 
@@ -450,10 +441,10 @@ export default function PixelArtPosterBuilder() {
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mb-2 text-3xl font-bold text-neutral-900 dark:text-white">
             Pixel Art Poster Builder
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-neutral-600 dark:text-neutral-400">
             Import pixel art images and create crisp, pixelated compositions
           </p>
         </div>
@@ -482,19 +473,19 @@ export default function PixelArtPosterBuilder() {
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                   Optimized for pixel art
                 </p>
               </div>
 
               {/* Selected Image Controls */}
               {selectedImage && (
-                <div className="mb-6 rounded-lg bg-blue-50 p-3 dark:bg-blue-900">
+                <div className="mb-6 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-900">
                   <h3 className="mb-2 text-sm font-medium">
                     Selected: {selectedImage.name}
                   </h3>
                   <div className="space-y-2">
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
                       Size: {selectedImage.width} × {selectedImage.height}px
                     </div>
                     <div className="flex gap-1">
@@ -564,13 +555,13 @@ export default function PixelArtPosterBuilder() {
                         key={image.id}
                         className={`flex cursor-pointer items-center justify-between rounded p-2 text-sm ${
                           selectedImageId === image.id
-                            ? "bg-blue-100 dark:bg-blue-900"
-                            : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
+                            ? "bg-neutral-100 dark:bg-neutral-900"
+                            : "bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                         }`}
                         onClick={() => setSelectedImageId(image.id)}
                       >
                         <div className="flex min-w-0 flex-1 items-center">
-                          <span className="mr-2 text-xs text-gray-400 dark:text-gray-600">
+                          <span className="mr-2 text-xs text-neutral-400 dark:text-neutral-600">
                             #{images.length - index}
                           </span>
                           <span className="truncate">{image.name}</span>
@@ -581,7 +572,7 @@ export default function PixelArtPosterBuilder() {
                               e.stopPropagation();
                               moveUp(image.id);
                             }}
-                            className="h-6 w-6 text-xs text-gray-500 hover:text-gray-700"
+                            className="h-6 w-6 text-xs text-neutral-500 hover:text-neutral-700"
                             title="Move up"
                           >
                             ↑
@@ -591,7 +582,7 @@ export default function PixelArtPosterBuilder() {
                               e.stopPropagation();
                               moveDown(image.id);
                             }}
-                            className="h-6 w-6 text-xs text-gray-500 hover:text-gray-700"
+                            className="h-6 w-6 text-xs text-neutral-500 hover:text-neutral-700"
                             title="Move down"
                           >
                             ↓
@@ -620,14 +611,14 @@ export default function PixelArtPosterBuilder() {
             <Card className="p-4">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">Canvas</h2>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-neutral-500">
                   800 × 600px • Pixel Perfect
                 </div>
               </div>
 
               <div
                 ref={canvasRef}
-                className="relative h-[600px] w-full cursor-crosshair overflow-hidden rounded-lg border-2 border-dashed lg:w-[800px] border-gray-300 bg-transparent"
+                className="relative h-[600px] w-full cursor-crosshair overflow-hidden rounded-lg border-2 border-dashed lg:w-[800px] border-neutral-300 bg-transparent"
                 style={{
                   backgroundImage: `
                     linear-gradient(45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%), 
@@ -644,7 +635,7 @@ export default function PixelArtPosterBuilder() {
                 onClick={handleCanvasClick}
               >
                 {images.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                  <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
                     <div className="text-center">
                       <Upload className="mx-auto mb-2 h-12 w-12 opacity-50" />
                       <p>Import pixel art images to start building</p>
@@ -664,7 +655,7 @@ export default function PixelArtPosterBuilder() {
                           <div
                             className={`group absolute select-none ${
                               selectedImageId === image.id
-                                ? "ring-2 ring-blue-400"
+                                ? "ring-2 ring-neutral-400"
                                 : ""
                             }`}
                             style={{
@@ -692,25 +683,25 @@ export default function PixelArtPosterBuilder() {
                               <>
                                 {/* Corner handles */}
                                 <div
-                                  className="absolute -top-1 -left-1 h-3 w-3 cursor-nw-resize border border-white bg-blue-500"
+                                  className="absolute -top-1 -left-1 h-3 w-3 cursor-nw-resize border border-white bg-neutral-500"
                                   onMouseDown={(e) =>
                                     handleResizeStart(e, image.id, "nw")
                                   }
                                 />
                                 <div
-                                  className="absolute -top-1 -right-1 h-3 w-3 cursor-ne-resize border border-white bg-blue-500"
+                                  className="absolute -top-1 -right-1 h-3 w-3 cursor-ne-resize border border-white bg-neutral-500"
                                   onMouseDown={(e) =>
                                     handleResizeStart(e, image.id, "ne")
                                   }
                                 />
                                 <div
-                                  className="absolute -bottom-1 -left-1 h-3 w-3 cursor-sw-resize border border-white bg-blue-500"
+                                  className="absolute -bottom-1 -left-1 h-3 w-3 cursor-sw-resize border border-white bg-neutral-500"
                                   onMouseDown={(e) =>
                                     handleResizeStart(e, image.id, "sw")
                                   }
                                 />
                                 <div
-                                  className="absolute -right-1 -bottom-1 h-3 w-3 cursor-se-resize border border-white bg-blue-500"
+                                  className="absolute -right-1 -bottom-1 h-3 w-3 cursor-se-resize border border-white bg-neutral-500"
                                   onMouseDown={(e) =>
                                     handleResizeStart(e, image.id, "se")
                                   }
@@ -722,7 +713,7 @@ export default function PixelArtPosterBuilder() {
                         <TooltipContent
                           side="top"
                           align="start"
-                          className="bg-transparent p-0 text-black [--primary:theme(colors.black)]"
+                          className="bg-transparent p-0 text-black [--primary:theme(colors.black/0)]"
                           alignOffset={0}
                         >
                           {/* Layer Controls */}
@@ -733,7 +724,7 @@ export default function PixelArtPosterBuilder() {
                                 e.stopPropagation();
                                 bringToFront(image.id);
                               }}
-                              className="border-r px-2 py-1 text-xs hover:bg-gray-100"
+                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
                               title="Bring to front"
                             >
                               ↑↑
@@ -743,7 +734,7 @@ export default function PixelArtPosterBuilder() {
                                 e.stopPropagation();
                                 moveUp(image.id);
                               }}
-                              className="border-r px-2 py-1 text-xs hover:bg-gray-100"
+                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
                               title="Move up"
                             >
                               ↑
@@ -753,7 +744,7 @@ export default function PixelArtPosterBuilder() {
                                 e.stopPropagation();
                                 moveDown(image.id);
                               }}
-                              className="border-r px-2 py-1 text-xs hover:bg-gray-100"
+                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
                               title="Move down"
                             >
                               ↓
@@ -763,7 +754,7 @@ export default function PixelArtPosterBuilder() {
                                 e.stopPropagation();
                                 sendToBack(image.id);
                               }}
-                              className="px-2 py-1 text-xs hover:bg-gray-100"
+                              className="px-2 py-1 text-xs hover:bg-neutral-100"
                               title="Send to back"
                             >
                               ↓↓
