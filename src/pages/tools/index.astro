@@ -1,0 +1,46 @@
+---
+import { getCollection } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import { TypingText } from "@/components/animate-ui/text/typing";
+import { CommandKeyTrigger } from "@/components/AppCommand";
+import { Card } from "@/components/ui/card";
+
+const tools = await getCollection("tools");
+---
+
+<Layout>
+  <div
+    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+  >
+    <TypingText
+      text="Tools"
+      className="text-4xl font-bold"
+      cursor
+      client:load
+    />
+    <CommandKeyTrigger client:only />
+    <div class="max-w-2xl mx-auto p-6 space-y-10">
+      <section>
+        {
+          tools.length === 0 && (
+            <p class="text-center text-2xl font-bold">Soon...</p>
+          )
+        }
+        <div class="flex flex-col gap-4">
+          {
+            tools.map((tool) => (
+              <a href={tool.data.url}>
+                <Card className="p-4">
+                  <h4 class="title text-2xl font-bold">{tool.data.title}</h4>
+                  <p class="text-sm text-muted-foreground">
+                    {tool.data.description}
+                  </p>
+                </Card>
+              </a>
+            ))
+          }
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>

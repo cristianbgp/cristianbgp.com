@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTheme } from "@/hooks/use-theme";
 
 interface ImageItem {
   id: string;
@@ -39,6 +40,7 @@ interface ResizeState {
 }
 
 export default function PixelArtPosterBuilder() {
+  const { theme } = useTheme();
   const [images, setImages] = useState<ImageItem[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [dragState, setDragState] = useState<DragState>({
@@ -448,10 +450,10 @@ export default function PixelArtPosterBuilder() {
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
             Pixel Art Poster Builder
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Import pixel art images and create crisp, pixelated compositions
           </p>
         </div>
@@ -480,19 +482,19 @@ export default function PixelArtPosterBuilder() {
                   onChange={handleImageUpload}
                   className="hidden"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Optimized for pixel art
                 </p>
               </div>
 
               {/* Selected Image Controls */}
               {selectedImage && (
-                <div className="mb-6 rounded-lg bg-blue-50 p-3">
+                <div className="mb-6 rounded-lg bg-blue-50 p-3 dark:bg-blue-900">
                   <h3 className="mb-2 text-sm font-medium">
                     Selected: {selectedImage.name}
                   </h3>
                   <div className="space-y-2">
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       Size: {selectedImage.width} × {selectedImage.height}px
                     </div>
                     <div className="flex gap-1">
@@ -562,13 +564,13 @@ export default function PixelArtPosterBuilder() {
                         key={image.id}
                         className={`flex cursor-pointer items-center justify-between rounded p-2 text-sm ${
                           selectedImageId === image.id
-                            ? "bg-blue-100"
-                            : "bg-gray-50 hover:bg-gray-100"
+                            ? "bg-blue-100 dark:bg-blue-900"
+                            : "bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
                         }`}
                         onClick={() => setSelectedImageId(image.id)}
                       >
                         <div className="flex min-w-0 flex-1 items-center">
-                          <span className="mr-2 text-xs text-gray-400">
+                          <span className="mr-2 text-xs text-gray-400 dark:text-gray-600">
                             #{images.length - index}
                           </span>
                           <span className="truncate">{image.name}</span>
@@ -628,10 +630,10 @@ export default function PixelArtPosterBuilder() {
                 className="relative h-[600px] w-full cursor-crosshair overflow-hidden rounded-lg border-2 border-dashed lg:w-[800px] border-gray-300 bg-transparent"
                 style={{
                   backgroundImage: `
-                    linear-gradient(45deg, #f0f0f0 25%, transparent 25%), 
-                    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), 
-                    linear-gradient(45deg, transparent 75%, #f0f0f0 75%), 
-                    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)
+                    linear-gradient(45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%), 
+                    linear-gradient(-45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%), 
+                    linear-gradient(45deg, transparent 75%, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 75%), 
+                    linear-gradient(-45deg, transparent 75%, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 75%)
                   `,
                   backgroundSize: "20px 20px",
                   backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",

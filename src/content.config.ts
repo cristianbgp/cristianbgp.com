@@ -16,4 +16,16 @@ const articles = defineCollection({
       archived: z.boolean().optional(),
     }),
 });
-export const collections = { articles };
+
+const tools = defineCollection({
+  loader: glob({ base: "./src/content/tools", pattern: "**/*.{md,mdx}" }),
+  schema: () =>
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      description: z.string(),
+      url: z.string(),
+    }),
+});
+
+export const collections = { articles, tools };

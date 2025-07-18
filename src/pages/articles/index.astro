@@ -5,6 +5,7 @@ import Layout from "@/layouts/Layout.astro";
 import { Separator } from "@/components/ui/separator";
 import { TypingText } from "@/components/animate-ui/text/typing";
 import { cn } from "@/lib/utils";
+import { CommandKeyTrigger } from "@/components/AppCommand";
 
 const posts = (await getCollection("articles"))
   // .filter((post) => post.data.published && !post.data.archived)
@@ -21,6 +22,7 @@ const posts = (await getCollection("articles"))
       cursor
       client:load
     />
+    <CommandKeyTrigger client:only />
     <div class="max-w-2xl mx-auto p-6 space-y-10">
       <section>
         {

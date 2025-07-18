@@ -1,5 +1,6 @@
 import {
   BookTextIcon,
+  BoxIcon,
   CalendarDaysIcon,
   CircleDollarSignIcon,
   Code2Icon,
@@ -171,7 +172,7 @@ export function AppCommand({
           </CommandItem>
           <CommandItem
             onSelect={() =>
-              onSelect(() => navigate("/components/json-tree-viewer"))
+              onSelect(() => navigate("/tools/json-tree-viewer"))
             }
           >
             <Code2Icon />
@@ -198,6 +199,12 @@ export function AppCommand({
             <CommandItem onSelect={() => onSelect(() => navigate("/articles"))}>
               <BookTextIcon />
               <span>Articles</span>
+            </CommandItem>
+          )}
+          {location.pathname !== "/tools" && (
+            <CommandItem onSelect={() => onSelect(() => navigate("/tools"))}>
+              <BoxIcon />
+              <span>Tools</span>
             </CommandItem>
           )}
           {location.pathname !== "/resume" && (
