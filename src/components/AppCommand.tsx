@@ -8,6 +8,7 @@ import {
   Moon,
   NotebookTextIcon,
   Settings,
+  SparklesIcon,
   SquareDashedMousePointerIcon,
   Sun,
   User,
@@ -171,20 +172,29 @@ export function AppCommand({
             <span>Holidays</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              onSelect(() => navigate("/tools/json-tree-viewer"))
-            }
+            onSelect={() => onSelect(() => navigate("/tools/json-tree-viewer"))}
           >
             <Code2Icon />
             <span>JSON Tree Viewer</span>
           </CommandItem>
           <CommandItem
-            onSelect={() =>
-              onSelect(() => navigate("/tools/pixel-art-poster"))
-            }
+            onSelect={() => onSelect(() => navigate("/tools/pixel-art-poster"))}
           >
             <SquareDashedMousePointerIcon />
             <span>Pixel Art Poster</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              onSelect(() =>
+                window.open(
+                  "https://microinteractions.cristianbgp.com",
+                  "_blank"
+                )
+              )
+            }
+          >
+            <SparklesIcon />
+            <span>Microinteractions</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
