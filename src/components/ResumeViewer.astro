@@ -54,6 +54,7 @@ interface Resume {
 }
 
 import resumeData from "../lib/resume.json";
+import { DateTime } from "luxon";
 
 const { basics, work, education, skills, languages } = resumeData as Resume;
 
@@ -61,6 +62,28 @@ function formatDate(dateStr?: string): string | null {
   if (!dateStr) return null;
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+}
+
+function getDuration(startDate: string, endDate?: string): string {
+  const start = DateTime.fromISO(startDate);
+  const end = endDate ? DateTime.fromISO(endDate) : DateTime.now();
+  
+  const diff = end.diff(start, ["years", "months"]).toObject();
+  
+  const years = Math.floor(diff.years || 0);
+  const months = Math.round(diff.months || 0);
+  
+  const parts: string[] = [];
+  
+  if (years > 0) {
+    parts.push(`${years} year${years !== 1 ? "s" : ""}`);
+  }
+  
+  if (months > 0) {
+    parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+  }
+  
+  return parts.length > 0 ? `(${parts.join(", ")})` : "";
 }
 ---
 
@@ -162,6 +185,8 @@ function formatDate(dateStr?: string): string | null {
                 <div class="text-sm text-muted-foreground mt-1 sm:mt-0">
                   {formatDate(job.startDate)}
                   {job.endDate ? ` - ${formatDate(job.endDate)}` : " - Present"}
+                  {" "}
+                  {getDuration(job.startDate, job.endDate)}
                 </div>
               </div>
               <div class="mt-2 whitespace-pre-line text-sm">{job.summary}</div>
