@@ -31,14 +31,14 @@
     {
       "company": "Trudan Studios",
       "position": "Software Engineer",
-      "summary": "Working currently on Kuroro Beasts",
+      "summary": "- Frontend development of Kuroro Beasts, a large-scale web3 project.\n- Built interactive features using React, TypeScript, and modern frontend architecture.\n- Collaborated closely with backend teams working in .NET, ensuring seamless API integration and high-performing data flows.\n- Contributed to full-stack tasks using Node.js when needed, supporting internal tools and pipelines.\n- Worked with blockchain technology and web3 integrations to bring dynamic game systems to the web.",
       "website": "https://kurorobeasts.com/",
       "startDate": "2022-04-01"
     },
     {
       "company": "Able",
       "position": "Software Engineer",
-      "summary": "- Work on the implementation of high-impact features\n- Work with React, React Native, and Ruby on Rails\n- Use Jest, Rspec, and Cypress for testing\n- Be part of the engineering hiring process\n- Regular speaker and organizer of tech events to share knowledge outside the company",
+      "summary": "- Develop a science fiction game that takes the user through a series of tasks oriented around solving mysteries. I worked with NextJS on this project.\n- Worked on an internal tool that aimed to build a stronger and a more engaged company that helps to bring remote teams closer only using Ruby on Rails at the start, then migrating to also use React.\n- Worked in supporting the development of mobile apps that aimed to provide better tools for mental wellness using React Native with Expo.\n- Lately, I’ve been working on a web project that aims to facilitate project development for wide organizations using React and Ruby on Rails with Typescript and GraphQL.\n- Regular speaker and organizer of tech events to share knowledge outside the company.",
       "website": "https://able.co",
       "startDate": "2019-09-02",
       "endDate": "2022-03-31"
