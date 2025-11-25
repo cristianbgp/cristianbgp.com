@@ -1,0 +1,64 @@
+---
+title: "Install TimescaleDB on PostgreSQL (macOS)"
+description: "Step-by-step guide to installing TimescaleDB extension on PostgreSQL using Homebrew on macOS"
+date: "2024-07-15T00:00:00.000Z"
+published: true
+tags: ["postgresql", "timescaledb", "macos", "database", "homebrew"]
+lang: "en"
+---
+
+This guide will walk you through installing TimescaleDB on PostgreSQL using Homebrew on macOS.
+
+## Installation Steps
+
+### 1. Tap the Timescale Homebrew repository
+
+```bash
+brew tap timescale/tap
+```
+
+### 2. Install TimescaleDB
+
+```bash
+brew install timescaledb
+```
+
+### 3. Fix pg_config Path (if needed)
+
+If you encounter an error that `pg_config --version` could not be executed, add PostgreSQL to your PATH:
+
+```bash
+echo 'export PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc
+```
+
+### 4. Run timescaledb-tune
+
+Configure TimescaleDB by running the tuning script. Make sure to replace `<user_name>` and `<pg_version>` with your actual values:
+
+```bash
+timescaledb-tune --yes --conf-path=/Users/<user_name>/Library/Application\ Support/Postgres/var-<pg_version>/postgresql.conf
+```
+
+### 5. Copy TimescaleDB Files
+
+Navigate to `/opt/homebrew/Cellar/timescaledb/` and you will see a folder with a version number (this is the TimescaleDB version).
+
+**Important:** Make sure your terminal has Full Disk Access to files and folders if you get an `Operation not permitted` error.
+
+Then run the following scripts, making sure to replace `<pg_version>` and `<timescaledb_version>` with the actual versions you have:
+
+```bash
+/usr/bin/install -c -m 755 $(find /opt/homebrew/Cellar/timescaledb/<timescaledb_version>/lib/timescaledb/postgresql@<pg_version>/ -name "timescaledb*.dylib") /Applications/Postgres.app/Contents/Versions/<pg_version>/lib/postgresql
+```
+
+```bash
+/usr/bin/install -c -m 644 /opt/homebrew/Cellar/timescaledb/<timescaledb_version>/share/timescaledb/* /Applications/Postgres.app/Contents/Versions/<pg_version>/share/postgresql/extension/
+```
+
+### 6. Configure PostgreSQL
+
+Open Postgres.app and go to Server Settings. Open the config file and make sure `shared_preload_libraries = 'timescaledb'` is present. Then stop and restart the app.
+
+## Verification
+
+After completing these steps, you should be able to create TimescaleDB hypertables in your PostgreSQL database. TimescaleDB is now ready to use!
