@@ -10,6 +10,9 @@ import tailwindcss from "@tailwindcss/vite";
 // https://astro.build/config
 export default defineConfig({
   site: "https://cristianbgp.com",
+  markdown: {
+    syntaxHighlight: "prism",
+  },
   integrations: [mdx(), sitemap(), react()],
 
   vite: {

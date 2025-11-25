@@ -72,9 +72,9 @@ export function CommandKeyTrigger() {
 }
 
 export function AppCommand({
-  posts,
+  articles,
 }: {
-  posts: CollectionEntry<"articles">[];
+  articles: CollectionEntry<"articles">[];
 }) {
   const isCommandOpen = useStore($isCommandOpen);
   const [search, setSearch] = useState("");
@@ -229,17 +229,19 @@ export function AppCommand({
             <CommandShortcut>{getCommandKey()}S</CommandShortcut>
           </CommandItem>
         </CommandGroup>
-        {search.length > 0 && posts.length > 0 && (
+        {search.length > 0 && articles.length > 0 && (
           <CommandGroup>
-            {posts.map((post) => (
+            {articles.map((article) => (
               <CommandItem
-                key={post.id}
+                key={article.id}
                 onSelect={() =>
-                  onSelect(() => navigate(`/articles/${post.id}`))
+                  onSelect(() => navigate(`/articles/${article.id}`))
                 }
               >
                 <BookTextIcon />
-                <span>{post.data.title}</span>
+                <span className={cn(article.data.archived && "line-through")}>
+                  {article.data.title}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>

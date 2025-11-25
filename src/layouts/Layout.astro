@@ -14,8 +14,8 @@ type Props = {
 
 const { title, description, showBackground = true, image } = Astro.props;
 
-const posts = (await getCollection("articles")).filter(
-  (post) => post.data.published
+const articles = (await getCollection("articles")).filter(
+  (article) => article.data.published
 );
 ---
 
@@ -54,7 +54,7 @@ const posts = (await getCollection("articles")).filter(
     >
       <!-- {showBackground && <ThemeAwareBubbleBackground client:only />} -->
       <slot />
-      <AppCommand posts={posts} client:only />
+      <AppCommand articles={articles} client:only />
     </main>
   </body><Toaster client:only />
 </html>
