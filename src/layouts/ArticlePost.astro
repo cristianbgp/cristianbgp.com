@@ -30,7 +30,7 @@ const {
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
   >
-    <div class="max-w-2xl mx-auto p-6 space-y-10">
+    <div class="max-w-full lg:max-w-2xl mx-auto p-6 space-y-10">
       <article>
         <div class="hero-image">
           {
@@ -54,7 +54,7 @@ const {
             <h1 class="text-4xl font-bold mb-0 text-foreground">{title}</h1>
             {
               tags?.length > 0 && (
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex items-center flex-wrap gap-2 mt-2">
                   {tags.map((tag) => (
                     <Badge>{tag}</Badge>
                   ))}
