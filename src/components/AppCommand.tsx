@@ -1,8 +1,10 @@
 import {
+  BookOpenIcon,
   BookTextIcon,
   BoxIcon,
   CalendarDaysIcon,
   CircleDollarSignIcon,
+  CircleDotIcon,
   Code2Icon,
   Home,
   Moon,
@@ -45,7 +47,7 @@ export function CommandKeyTrigger() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowCommandPrompt(true);
-    }, 10000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -144,6 +146,16 @@ export function AppCommand({
           <CommandItem
             onSelect={() => {
               onSelect(() =>
+                window.open("https://space.cristianbgp.com", "_blank")
+              );
+            }}
+          >
+            <CircleDotIcon />
+            <span>Space</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => {
+              onSelect(() =>
                 window.open("https://notes.cristianbgp.com", "_blank")
               );
             }}
@@ -207,7 +219,7 @@ export function AppCommand({
           )}
           {location.pathname !== "/articles" && (
             <CommandItem onSelect={() => onSelect(() => navigate("/articles"))}>
-              <BookTextIcon />
+              <BookOpenIcon />
               <span>Articles</span>
             </CommandItem>
           )}
