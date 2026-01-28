@@ -5,7 +5,9 @@ import { TypingText } from "@/components/animate-ui/text/typing";
 import { CommandKeyTrigger } from "@/components/AppCommand";
 import { Card } from "@/components/ui/card";
 
-const tools = await getCollection("tools");
+const tools = (await getCollection("tools")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
 ---
 
 <Layout>
@@ -28,16 +30,25 @@ const tools = await getCollection("tools");
         }
         <div class="flex flex-col gap-4">
           {
-            tools.map((tool) => (
-              <a href={tool.data.url}>
-                <Card className="p-4">
-                  <h4 class="title text-2xl font-bold">{tool.data.title}</h4>
-                  <p class="text-sm text-muted-foreground">
-                    {tool.data.description}
-                  </p>
-                </Card>
-              </a>
-            ))
+            tools.map((tool) => {
+              const isExternal =
+                tool.data.url.startsWith("http://") ||
+                tool.data.url.startsWith("https://");
+              return (
+                <a
+                  href={tool.data.url}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                >
+                  <Card className="p-4">
+                    <h4 class="title text-2xl font-bold">{tool.data.title}</h4>
+                    <p class="text-sm text-muted-foreground">
+                      {tool.data.description}
+                    </p>
+                  </Card>
+                </a>
+              );
+            })
           }
         </div>
       </section>

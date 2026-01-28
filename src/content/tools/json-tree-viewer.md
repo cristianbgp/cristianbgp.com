@@ -3,6 +3,7 @@ id: "json-tree-viewer"
 title: "JSON Tree Viewer"
 description: "An interactive tool for visualizing and exploring JSON data structures"
 url: "/tools/json-tree-viewer"
+date: "2025-09-01"
 ---
 
 The JSON Tree Viewer is a powerful web-based tool that helps developers and data analysts visualize and navigate JSON data structures in an intuitive tree format. It transforms raw JSON text into an interactive, collapsible tree view that makes it easy to explore complex data structures.

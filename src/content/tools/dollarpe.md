@@ -3,6 +3,7 @@ id: "dollarpe"
 title: "Dollarpe"
 description: "A convenient tool to check multiple dollar to Peruvian Sol exchange rates in one place"
 url: "https://dollarpe.cristianbgp.com"
+date: "2025-01-01"
 ---
 
 Dollarpe is a specialized web tool designed to help users quickly compare exchange rates between US Dollars (USD) and Peruvian Soles (PEN) across various exchange houses and services in Peru. Instead of visiting multiple websites individually, Dollarpe aggregates this information in one convenient location.

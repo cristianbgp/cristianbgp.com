@@ -3,6 +3,7 @@ id: "notes"
 title: "Notes"
 description: "A minimalist markdown editor and viewer with local storage persistence"
 url: "https://notes.cristianbgp.com"
+date: "2025-08-01"
 ---
 
 Notes is a lightweight, browser-based markdown editor and viewer that provides a simple way to create, edit, and store your notes locally. Built with simplicity in mind, it leverages your browser's local storage to save your notes automatically, ensuring your content persists between sessions without the need for external servers or authentication.

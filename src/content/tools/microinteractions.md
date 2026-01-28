@@ -3,6 +3,7 @@ id: "microinteractions"
 title: "Microinteractions"
 description: "A collection of interactive UI components and microinteractions for modern web experiences"
 url: "https://microinteractions.cristianbgp.com"
+date: "2025-11-01"
 ---
 
 The Microinteractions tool is a comprehensive showcase of carefully crafted interactive UI components and microinteractions designed to enhance user experiences in modern web applications. Each interaction is built with attention to detail, performance, and accessibility.

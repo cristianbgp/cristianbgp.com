@@ -25,6 +25,7 @@ const tools = defineCollection({
       title: z.string(),
       description: z.string(),
       url: z.string(),
+      date: z.coerce.date(),
     }),
 });
 

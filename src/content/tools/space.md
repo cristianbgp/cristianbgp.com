@@ -3,6 +3,7 @@ id: "space"
 title: "Space"
 description: "A minimalist desktop environment built inside your browser with draggable windows, notes, and AI chat"
 url: "https://space.cristianbgp.com"
+date: "2026-01-28"
 ---
 
 Space is a browser-based desktop environment that brings a familiar desktop experience to the web. Inspired by classic window managers, it offers draggable and resizable windows, a notes app with markdown support, and an AI chat powered by Llama 3.3—all accessible from a dock and menu bar.

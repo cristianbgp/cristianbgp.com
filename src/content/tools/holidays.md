@@ -3,6 +3,7 @@ id: "holidays"
 title: "Peruvian Holidays"
 description: "A simple viewer for official Peruvian holidays and celebrations"
 url: "https://holiday.cristianbgp.com"
+date: "2025-06-01"
 ---
 
 This tool provides a straightforward way to view and track official Peruvian holidays throughout the year. It's designed to help both locals and visitors stay informed about national holidays and celebrations in Peru.

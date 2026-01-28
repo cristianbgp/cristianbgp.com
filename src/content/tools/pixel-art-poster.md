@@ -3,6 +3,7 @@ id: "pixel-art-poster"
 title: "Pixel Art Poster"
 description: "A creative tool for composing custom posters using pixel art images"
 url: "/tools/pixel-art-poster"
+date: "2025-10-01"
 ---
 
 The Pixel Art Poster tool is a unique web application that allows users to create custom posters by arranging and combining pixel art images. Perfect for retro-style designs, game art, or unique digital compositions, this tool makes it easy to create engaging pixel art posters.
