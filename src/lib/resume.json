@@ -29,6 +29,14 @@
   },
   "work": [
     {
+      "company": "Able",
+      "position": "Software Engineer",
+      "summary": "Developed features for a healthcare federated data network, enabling privacy-preserving collaboration across distributed data sources. \nContributed to the design of federated data workflows, patient identity matching, and data access interfaces that allowed organizations to query and analyze combined datasets without moving raw data between institutions.",
+      "website": "https://able.co",
+      "startDate": "2025-12-20",
+      "endDate": "2026-05-31"
+    },
+    {
       "company": "Trudan Studios",
       "position": "Software Engineer",
       "summary": "- Frontend development of Kuroro Beasts, a large-scale web3 project.\n- Built interactive features using React, TypeScript, and modern frontend architecture.\n- Collaborated closely with backend teams working in .NET, ensuring seamless API integration and high-performing data flows.\n- Contributed to full-stack tasks using Node.js when needed, supporting internal tools and pipelines.\n- Worked with blockchain technology and web3 integrations to bring dynamic game systems to the web.",
@@ -61,15 +69,7 @@
       "endDate": "2018-12-31"
     }
   ],
-  "education": [
-    {
-      "institution": "Instituto Tolouse Lautrec",
-      "area": "Game Design",
-      "studyType": "Institute",
-      "startDate": "2015-03-16",
-      "endDate": "2017-12-15"
-    }
-  ],
+  "education": [],
   "skills": [
     {
       "name": "Frontend Development",
