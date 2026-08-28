@@ -35,7 +35,12 @@ import {
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
 import { Button } from "@/components/ui/button";
-import { CollectionEntry } from "astro:content";
+
+type CommandArticle = {
+  id: string;
+  title: string;
+  archived: boolean;
+};
 
 function getCommandKey() {
   return isApple() ? "⌘" : "^";
@@ -56,7 +61,7 @@ export function CommandKeyTrigger() {
     <Button
       variant="ghost"
       className={cn(
-        "text-muted-foreground text-sm hover:text-foreground group select-none pointer-events-auto transition-all duration-1000",
+        "text-muted-foreground text-sm hover:text-foreground group select-none pointer-events-auto transition-[color,opacity] duration-1000",
         showCommandPrompt ? "opacity-100" : "opacity-0",
         showCommandPrompt ? "cursor-pointer" : "cursor-default"
       )}
@@ -66,7 +71,7 @@ export function CommandKeyTrigger() {
       tabIndex={showCommandPrompt ? 0 : -1}
     >
       Press{" "}
-      <kbd className="bg-muted text-muted-foreground group-hover:text-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none transition-all duration-1000">
+      <kbd className="bg-muted text-muted-foreground group-hover:text-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none transition-colors duration-1000">
         <span className="text-xs">{getCommandKey()}</span>K
       </kbd>
     </Button>
@@ -76,7 +81,7 @@ export function CommandKeyTrigger() {
 export function AppCommand({
   articles,
 }: {
-  articles: CollectionEntry<"articles">[];
+  articles: CommandArticle[];
 }) {
   const isCommandOpen = useStore($isCommandOpen);
   const [search, setSearch] = useState("");
@@ -126,7 +131,7 @@ export function AppCommand({
       onOpenAutoFocus={isMobile() ? (e) => e.preventDefault() : undefined}
     >
       <CommandInput
-        placeholder="Type a command or search..."
+        placeholder="Type a command or search…"
         autoFocus={false}
         value={search}
         onValueChange={setSearch}
@@ -251,8 +256,8 @@ export function AppCommand({
                 }
               >
                 <BookTextIcon />
-                <span className={cn(article.data.archived && "line-through")}>
-                  {article.data.title}
+                <span className={cn(article.archived && "line-through")}>
+                  {article.title}
                 </span>
               </CommandItem>
             ))}

@@ -1,5 +1,6 @@
 ---
 title: "Web Scraping con NextJS API routes y puppeteer"
+description: "Cómo crear un scraper con Next.js API Routes y Puppeteer"
 date: "2021-04-10T01:12:06.922Z"
 published: true
 tags: ["nextjs", "puppeteer", "web scraping"]
@@ -12,13 +13,13 @@ import tamboWebpage from "../../assets/web-scraping/tambo-webpage.png";
 import tamboHtmlStructure from "../../assets/web-scraping/tambo-html-structure.png";
 import tamboEndpoint from "../../assets/web-scraping/tambo-endpoint.png";
 
-# Previamente
+## Previamente
 
 Antes tenía una web que me listaba tiendas Tambo+ y las ordenaba según la que esté más cerca a mi, ésto gracias a un endpoint que encontré en su propia página [https://tambomas.pe/public/api/stores](https://tambomas.pe/public/api/stores) pero lamentablemente ya no puedo acceder a ese endpoint.
 
 Al acceder a su página oficial, que ha tenido un rediseño, me di cuenta que tienen una página [https://www.tambo.pe/institucional/tiendas](https://www.tambo.pe/institucional/tiendas) donde tienen la lista de todas sus tiendas por eso decidí hacer web scrapping.
 
-# Empezamos
+## Empezamos
 
 En primer lugar tenemos que tener nuestra aplicación con NextJS lista y como dice el título usaremos `puppeteer` asi que lo instalamos en nuestras dependencias.
 
@@ -169,7 +170,7 @@ Ahora levantamos nuestra aplicación NextJS usando `yarn dev` y visitamos `http:
 
 <Image src={tamboEndpoint} alt="Tambo stores endpoint " />
 
-# Extra
+## Extra
 
 Tuve algunos problemas publicando la aplicación en `vercel` debido a que `puppeteer` no encuentra el navegador. Para esto hacemos algunos cambios en las opciones de puppeteer.
 

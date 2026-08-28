@@ -441,9 +441,9 @@ export default function PixelArtPosterBuilder() {
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6">
-          <h1 className="mb-2 text-3xl font-bold text-neutral-900 dark:text-white">
+          <h2 className="mb-2 text-3xl font-bold text-neutral-900 dark:text-white">
             Pixel Art Poster Builder
-          </h1>
+          </h2>
           <p className="text-neutral-600 dark:text-neutral-400">
             Import pixel art images and create crisp, pixelated compositions
           </p>

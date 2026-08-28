@@ -1,13 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import { motion, useInView, type UseInViewOptions } from 'motion/react';
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  type UseInViewOptions,
+} from 'motion/react';
 
 import { cn } from '@/lib/utils';
 
 function CursorBlinker({ className }: { className?: string }) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (shouldReduceMotion) return null;
+
   return (
     <motion.span
+      aria-hidden="true"
       data-slot="cursor-blinker"
       variants={{
         blinking: {
@@ -65,11 +75,15 @@ function TypingText({
     margin: inViewMargin,
   });
   const isInView = !inView || inViewResult;
+  const shouldReduceMotion = useReducedMotion();
+  const reducedMotionText = typeof text === 'string' ? text : (text[0] ?? '');
 
   const [started, setStarted] = React.useState(false);
   const [displayedText, setDisplayedText] = React.useState<string>('');
 
   React.useEffect(() => {
+    if (shouldReduceMotion) return;
+
     if (isInView) {
       const timeoutId = setTimeout(() => {
         setStarted(true);
@@ -81,9 +95,10 @@ function TypingText({
       }, delay);
       return () => clearTimeout(timeoutId);
     }
-  }, [isInView, delay]);
+  }, [isInView, delay, shouldReduceMotion]);
 
   React.useEffect(() => {
+    if (shouldReduceMotion) return;
     if (!started) return;
     const timeoutIds: Array<ReturnType<typeof setTimeout>> = [];
     const texts: string[] = typeof text === 'string' ? [text] : text;
@@ -139,11 +154,13 @@ function TypingText({
     return () => {
       timeoutIds.forEach(clearTimeout);
     };
-  }, [text, duration, started, loop, holdDelay]);
+  }, [text, duration, started, loop, holdDelay, shouldReduceMotion]);
 
   return (
     <span ref={localRef} data-slot="typing-text" {...props}>
-      <motion.span>{displayedText}</motion.span>
+      <motion.span>
+        {shouldReduceMotion ? reducedMotionText : displayedText}
+      </motion.span>
       {cursor && <CursorBlinker className={cursorClassName} />}
     </span>
   );

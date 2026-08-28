@@ -35,7 +35,7 @@ export default function SocialLinks() {
           rel="noopener noreferrer"
           aria-label={link.name}
         >
-          <link.icon className="w-6 h-6 stroke-2 hover:scale-110 transition-all duration-300" />
+          <link.icon className="w-6 h-6 stroke-2 transition-transform duration-300 hover:scale-110" />
         </a>
       ))}
     </div>

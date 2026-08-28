@@ -98,7 +98,7 @@ archived: false
 
 The filename becomes the article slug. For example, `my-article.mdx` is published at `/articles/my-article/`.
 
-Optional article fields are `description`, `updatedDate`, `heroImage`, and `archived`.
+Optional article fields are `updatedDate`, `heroImage`, and `archived`.
 
 ### Adding a tool
 

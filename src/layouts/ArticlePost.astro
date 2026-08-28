@@ -16,16 +16,16 @@ const {
   heroImage,
   tags,
   lang,
-  published,
   archived,
 } = Astro.props;
 ---
 
 <Layout
-  showBackground={false}
   title={title}
   description={description}
   image={heroImage}
+  lang={lang}
+  ogType="article"
 >
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
@@ -42,11 +42,11 @@ const {
         <div class="prose">
           <div class="title">
             <div class="date">
-              <FormattedDate date={date} />
+              <FormattedDate date={date} locale={lang} />
               {
                 updatedDate && (
                   <div class="text-gray-600 dark:text-gray-400">
-                    Last updated on <FormattedDate date={updatedDate} />
+                    Last updated on <FormattedDate date={updatedDate} locale={lang} />
                   </div>
                 )
               }

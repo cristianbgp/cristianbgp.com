@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { copyTextToClipboard } from "@/lib/clipboard";
 
 type JsonViewerProps = {
   data: any;
@@ -60,17 +61,22 @@ function JsonNode({
   level = 0,
 }: JsonNodeProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const [isCopied, setIsCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "error">(
+    "idle"
+  );
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const copyToClipboard = (e: MouseEvent) => {
+  const copyToClipboard = async (e: MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+    const status = await copyTextToClipboard(
+      navigator.clipboard,
+      JSON.stringify(data, null, 2),
+    );
+    setCopyStatus(status);
+    setTimeout(() => setCopyStatus("idle"), 2000);
   };
 
   const dataType =
@@ -85,62 +91,91 @@ function JsonNode({
       ? Object.keys(data).length
       : 0;
 
+  const nodeLabel = (
+    <>
+      {isExpandable ? (
+        <span className="flex h-4 w-4 items-center justify-center">
+          {isExpanded ? (
+            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
+        </span>
+      ) : (
+        <span className="w-4" />
+      )}
+
+      <span className="font-semibold text-primary">{name}</span>
+
+      <span className="text-muted-foreground">
+        {isExpandable ? (
+          <>
+            {dataType === "array" ? "[" : "{"}
+            {!isExpanded && (
+              <span className="text-muted-foreground">
+                {" "}
+                {itemCount} {itemCount === 1 ? "item" : "items"}{" "}
+                {dataType === "array" ? "]" : "}"}
+              </span>
+            )}
+          </>
+        ) : (
+          ":"
+        )}
+      </span>
+
+      {!isExpandable && <JsonValue data={data} name={name} />}
+    </>
+  );
+
   return (
     <div
       className={cn("pl-4 group/object", level > 0 && "border-l border-border")}
     >
       <div
         className={cn(
-          "flex items-start gap-1 py-1 hover:bg-muted/50 rounded px-1 -ml-4 cursor-pointer group/property",
+          "group/property -ml-4 flex items-start gap-1 rounded px-1 py-1 hover:bg-muted/50",
           isRoot && "text-primary font-bold italic"
         )}
-        onClick={isExpandable ? handleToggle : undefined}
       >
         {isExpandable ? (
-          <div className="w-4 h-4 flex items-center justify-center">
-            {isExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
-          </div>
+          <button
+            type="button"
+            className="flex min-w-0 flex-1 cursor-pointer items-start gap-1 rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-expanded={isExpanded}
+            onClick={handleToggle}
+          >
+            {nodeLabel}
+          </button>
         ) : (
-          <div className="w-4" />
+          <div className="flex min-w-0 flex-1 items-start gap-1">{nodeLabel}</div>
         )}
 
-        <span className="text-primary font-semibold">{name}</span>
-
-        <span className="text-muted-foreground">
-          {isExpandable ? (
-            <>
-              {dataType === "array" ? "[" : "{"}
-              {!isExpanded && (
-                <span className="text-muted-foreground">
-                  {" "}
-                  {itemCount} {itemCount === 1 ? "item" : "items"}{" "}
-                  {dataType === "array" ? "]" : "}"}
-                </span>
-              )}
-            </>
-          ) : (
-            ":"
-          )}
-        </span>
-
-        {!isExpandable && <JsonValue data={data} />}
-
-        {!isExpandable && <div className="w-3.5" />}
-
         <button
+          type="button"
           onClick={copyToClipboard}
-          className="ml-auto opacity-0 group-hover/property:opacity-100 hover:bg-muted p-1 rounded"
+          className="ml-auto rounded p-1 opacity-0 hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/property:opacity-100"
+          aria-label={
+            copyStatus === "copied"
+              ? `Copied ${name}`
+              : copyStatus === "error"
+                ? `Could not copy ${name}`
+                : `Copy ${name} to clipboard`
+          }
           title="Copy to clipboard"
         >
-          {isCopied ? (
-            <Check className="h-3.5 w-3.5 text-foreground" />
+          {copyStatus === "copied" ? (
+            <Check aria-hidden="true" className="h-3.5 w-3.5 text-foreground" />
           ) : (
-            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+            <Copy aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
           )}
+          <span className="sr-only" aria-live="polite">
+            {copyStatus === "copied"
+              ? `${name} copied to clipboard`
+              : copyStatus === "error"
+                ? `Could not copy ${name} to clipboard`
+                : ""}
+          </span>
         </button>
       </div>
 
@@ -165,7 +200,7 @@ function JsonNode({
 }
 
 // Update the JsonValue function to make the entire row clickable with an expand icon
-function JsonValue({ data }: { data: any }) {
+function JsonValue({ data, name }: { data: any; name: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const dataType = typeof data;
   const TEXT_LIMIT = 80; // Character limit before truncation
@@ -190,8 +225,11 @@ function JsonValue({ data }: { data: any }) {
     case "string":
       if (data.length > TEXT_LIMIT) {
         return (
-          <div
-            className="text-gray-800 dark:text-gray-200 flex-1 flex gap-1 items-start relative group cursor-pointer"
+          <button
+            type="button"
+            className="group relative flex flex-1 cursor-pointer items-start gap-1 rounded text-left text-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-gray-200"
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? "Collapse" : "Expand"} value for ${name}`}
             onClick={(e) => {
               e.stopPropagation();
               setIsExpanded(!isExpanded);
@@ -204,7 +242,7 @@ function JsonValue({ data }: { data: any }) {
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                   <span className="inline-block max-w-full">
-                    {data.substring(0, TEXT_LIMIT)}...
+                    {data.substring(0, TEXT_LIMIT)}…
                   </span>
                 </TooltipTrigger>
                 <TooltipContent
@@ -218,12 +256,12 @@ function JsonValue({ data }: { data: any }) {
             {`"`}
             <div className="p-1 absolute right-0 translate-x-[calc(100%+4px)] opacity-0 group-hover:opacity-100 transition-opacity">
               {isExpanded ? (
-                <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                <ChevronUp aria-hidden="true" className="h-3 w-3 text-muted-foreground" />
               ) : (
-                <MoreHorizontal className="h-3 w-3 text-muted-foreground" />
+                <MoreHorizontal aria-hidden="true" className="h-3 w-3 text-muted-foreground" />
               )}
             </div>
-          </div>
+          </button>
         );
       }
       return (

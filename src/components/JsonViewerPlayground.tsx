@@ -1,7 +1,6 @@
 import { JsonViewer } from "@/components/json-tree-viewer";
 import { toast } from "sonner";
 import { useDebouncedState } from "@/hooks/use-debounced-state";
-import { useState, useEffect } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
