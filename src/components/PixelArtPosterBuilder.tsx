@@ -1,63 +1,95 @@
-import { useState, useRef, useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
+import { Download, Trash2, Upload } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Download, Upload, Trash2 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useTheme } from "@/hooks/use-theme";
+import { renderLayersInOrder } from "@/lib/poster-export";
+import {
+  clientPointToCanvas,
+  fitRectToCanvas,
+  getArrowKeyDelta,
+  moveRect,
+  POSTER_HEIGHT,
+  POSTER_WIDTH,
+  resizeRect,
+  type Point,
+  type PosterRect,
+  type ResizeHandle,
+} from "@/lib/poster-geometry";
+import { addLayer, moveLayer, removeLayer } from "@/lib/poster-layers";
 
-interface ImageItem {
+interface ImageItem extends PosterRect {
   id: string;
   src: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   originalWidth: number;
   originalHeight: number;
   name: string;
   zIndex: number;
 }
 
-interface DragState {
-  isDragging: boolean;
-  dragId: string | null;
-  offset: { x: number; y: number };
-}
+type Interaction =
+  | {
+      type: "drag";
+      pointerId: number;
+      imageId: string;
+      offset: Point;
+    }
+  | {
+      type: "resize";
+      pointerId: number;
+      imageId: string;
+      handle: ResizeHandle;
+      startPointer: Point;
+      startRect: PosterRect;
+      aspectRatio: number;
+    };
 
-interface ResizeState {
-  isResizing: boolean;
-  resizeId: string | null;
-  startPos: { x: number; y: number };
-  startSize: { width: number; height: number };
-  startImagePos: { x: number; y: number };
-  handle: string | null;
-}
+const RESIZE_HANDLES: Array<{
+  handle: ResizeHandle;
+  label: string;
+  position: string;
+}> = [
+  { handle: "nw", label: "top left", position: "top-1 left-1 cursor-nw-resize" },
+  { handle: "ne", label: "top right", position: "top-1 right-1 cursor-ne-resize" },
+  {
+    handle: "sw",
+    label: "bottom left",
+    position: "bottom-1 left-1 cursor-sw-resize",
+  },
+  {
+    handle: "se",
+    label: "bottom right",
+    position: "right-1 bottom-1 cursor-se-resize",
+  },
+];
 
 export default function PixelArtPosterBuilder() {
   const { theme } = useTheme();
   const [images, setImages] = useState<ImageItem[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
-    dragId: null,
-    offset: { x: 0, y: 0 },
-  });
-  const [resizeState, setResizeState] = useState<ResizeState>({
-    isResizing: false,
-    resizeId: null,
-    startPos: { x: 0, y: 0 },
-    startSize: { width: 0, height: 0 },
-    startImagePos: { x: 0, y: 0 },
-    handle: null,
-  });
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const interactionRef = useRef<Interaction | null>(null);
+
+  const getCanvasPoint = useCallback(
+    (clientX: number, clientY: number): Point | null => {
+      const bounds = canvasRef.current?.getBoundingClientRect();
+      if (!bounds || bounds.width === 0 || bounds.height === 0) return null;
+
+      return clientPointToCanvas(
+        { x: clientX, y: clientY },
+        {
+          left: bounds.left,
+          top: bounds.top,
+          width: bounds.width,
+          height: bounds.height,
+        },
+      );
+    },
+    [],
+  );
 
   const handleImageUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,404 +97,292 @@ export default function PixelArtPosterBuilder() {
       if (!files) return;
 
       Array.from(files).forEach((file) => {
-        if (file.type.startsWith("image/")) {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-              // For pixel art, keep original dimensions or scale by integer multiples
-              const maxWidth = 400;
-              const maxHeight = 400;
-              let { width, height } = img;
+        if (!file.type.startsWith("image/")) return;
 
-              // Scale down only if necessary, preferring integer scales
-              if (width > maxWidth || height > maxHeight) {
-                const scaleX = Math.floor(maxWidth / width) || 1;
-                const scaleY = Math.floor(maxHeight / height) || 1;
-                const scale = Math.min(scaleX, scaleY);
-
-                if (scale >= 1) {
-                  width *= scale;
-                  height *= scale;
-                } else {
-                  // If we need to scale down, do it proportionally
-                  const ratio = Math.min(maxWidth / width, maxHeight / height);
-                  width = Math.floor(width * ratio);
-                  height = Math.floor(height * ratio);
-                }
-              }
-
-              const newImage: ImageItem = {
-                id:
-                  Date.now().toString() +
-                  Math.random().toString(36).substr(2, 9),
-                src: e.target?.result as string,
-                x: Math.random() * 200,
-                y: Math.random() * 200,
-                width,
-                height,
-                originalWidth: img.width,
-                originalHeight: img.height,
-                name: file.name,
-                zIndex: 0,
-              };
-              setImages((prev) => [
-                ...prev,
-                { ...newImage, zIndex: prev.length + 1 },
-              ]);
+        const reader = new FileReader();
+        reader.onload = (readerEvent) => {
+          const imageElement = new Image();
+          imageElement.onload = () => {
+            const fittedRect = fitRectToCanvas({
+              x: Math.round(Math.random() * 200),
+              y: Math.round(Math.random() * 200),
+              width: imageElement.width,
+              height: imageElement.height,
+            });
+            const newImage: ImageItem = {
+              ...fittedRect,
+              id: crypto.randomUUID(),
+              src: readerEvent.target?.result as string,
+              originalWidth: imageElement.width,
+              originalHeight: imageElement.height,
+              name: file.name,
+              zIndex: 0,
             };
-            img.src = e.target?.result as string;
+
+            setImages((currentImages) => addLayer(currentImages, newImage));
+            setSelectedImageId(newImage.id);
           };
-          reader.readAsDataURL(file);
-        }
+          imageElement.src = readerEvent.target?.result as string;
+        };
+        reader.readAsDataURL(file);
       });
 
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     },
-    [images.length],
+    [],
   );
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent, imageId: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      setSelectedImageId(imageId);
-
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      const image = images.find((img) => img.id === imageId);
-      if (!image) return;
-
-      setDragState({
-        isDragging: true,
-        dragId: imageId,
-        offset: {
-          x: e.clientX - rect.left - image.x,
-          y: e.clientY - rect.top - image.y,
-        },
-      });
-    },
-    [images],
-  );
-
-  const handleResizeStart = useCallback(
-    (e: React.MouseEvent, imageId: string, handle: string) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      const image = images.find((img) => img.id === imageId);
-      if (!image) return;
-
-      setResizeState({
-        isResizing: true,
-        resizeId: imageId,
-        startPos: { x: e.clientX, y: e.clientY },
-        startSize: { width: image.width, height: image.height },
-        startImagePos: { x: image.x, y: image.y },
-        handle,
-      });
-    },
-    [images],
-  );
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent) => {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      if (resizeState.isResizing && resizeState.resizeId) {
-        const deltaX = e.clientX - resizeState.startPos.x;
-        const deltaY = e.clientY - resizeState.startPos.y;
-
-        setImages((prev) =>
-          prev.map((img) => {
-            if (img.id !== resizeState.resizeId) return img;
-
-            // Calculate aspect ratio from original dimensions
-            const aspectRatio = img.originalWidth / img.originalHeight;
-
-            let newWidth = resizeState.startSize.width;
-            let newHeight = resizeState.startSize.height;
-            let newX = resizeState.startImagePos.x;
-            let newY = resizeState.startImagePos.y;
-
-            // Calculate new dimensions based on handle while maintaining aspect ratio
-            switch (resizeState.handle) {
-              case "se": // bottom-right
-                newWidth = Math.max(20, resizeState.startSize.width + deltaX);
-                newHeight = newWidth / aspectRatio;
-                break;
-              case "sw": // bottom-left
-                newWidth = Math.max(20, resizeState.startSize.width - deltaX);
-                newHeight = newWidth / aspectRatio;
-                newX = resizeState.startImagePos.x + deltaX;
-                if (newWidth === 20) {
-                  newX = resizeState.startImagePos.x + resizeState.startSize.width - 20;
-                  newHeight = 20 / aspectRatio;
-                }
-                break;
-              case "ne": // top-right
-                newWidth = Math.max(20, resizeState.startSize.width + deltaX);
-                newHeight = newWidth / aspectRatio;
-                newY = resizeState.startImagePos.y + (resizeState.startSize.height - newHeight);
-                break;
-              case "nw": // top-left
-                newWidth = Math.max(20, resizeState.startSize.width - deltaX);
-                newHeight = newWidth / aspectRatio;
-                newX = resizeState.startImagePos.x + deltaX;
-                newY = resizeState.startImagePos.y + (resizeState.startSize.height - newHeight);
-                if (newWidth === 20) {
-                  newX = resizeState.startImagePos.x + resizeState.startSize.width - 20;
-                  newHeight = 20 / aspectRatio;
-                }
-                break;
-            }
-
-            // For pixel art, round to integer pixels
-            newWidth = Math.round(newWidth);
-            newHeight = Math.round(newHeight);
-            newX = Math.round(newX);
-            newY = Math.round(newY);
-
-            // Keep within canvas bounds
-            newX = Math.max(0, Math.min(newX, rect.width - newWidth));
-            newY = Math.max(0, Math.min(newY, rect.height - newHeight));
-
-            return {
-              ...img,
-              width: newWidth,
-              height: newHeight,
-              x: newX,
-              y: newY,
-            };
-          }),
-        );
-      } else if (dragState.isDragging && dragState.dragId) {
-        const newX = e.clientX - rect.left - dragState.offset.x;
-        const newY = e.clientY - rect.top - dragState.offset.y;
-
-        setImages((prev) =>
-          prev.map((img) =>
-            img.id === dragState.dragId
-              ? {
-                  ...img,
-                  x: Math.round(
-                    Math.max(0, Math.min(newX, rect.width - img.width)),
-                  ),
-                  y: Math.round(
-                    Math.max(0, Math.min(newY, rect.height - img.height)),
-                  ),
-                }
-              : img,
-          ),
-        );
-      }
-    },
-    [dragState, resizeState],
-  );
-
-  const handleMouseUp = useCallback(() => {
-    setDragState({
-      isDragging: false,
-      dragId: null,
-      offset: { x: 0, y: 0 },
-    });
-    setResizeState({
-      isResizing: false,
-      resizeId: null,
-      startPos: { x: 0, y: 0 },
-      startSize: { width: 0, height: 0 },
-      startImagePos: { x: 0, y: 0 },
-      handle: null,
-    });
+  const removeImage = useCallback((imageId: string) => {
+    setImages((currentImages) => removeLayer(currentImages, imageId));
+    setSelectedImageId((currentId) =>
+      currentId === imageId ? null : currentId,
+    );
   }, []);
-
-  const handleCanvasClick = useCallback((e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setSelectedImageId(null);
-    }
-  }, []);
-
-  const removeImage = useCallback(
-    (imageId: string) => {
-      setImages((prev) => prev.filter((img) => img.id !== imageId));
-      if (selectedImageId === imageId) {
-        setSelectedImageId(null);
-      }
-    },
-    [selectedImageId],
-  );
 
   const resetImageSize = useCallback((imageId: string) => {
-    setImages((prev) =>
-      prev.map((img) =>
-        img.id === imageId
+    setImages((currentImages) =>
+      currentImages.map((image) =>
+        image.id === imageId
           ? {
-              ...img,
-              width: img.originalWidth,
-              height: img.originalHeight,
+              ...image,
+              ...fitRectToCanvas({
+                ...image,
+                width: image.originalWidth,
+                height: image.originalHeight,
+              }),
             }
-          : img,
+          : image,
       ),
     );
   }, []);
 
   const scaleImage = useCallback((imageId: string, scale: number) => {
-    setImages((prev) =>
-      prev.map((img) =>
-        img.id === imageId
+    setImages((currentImages) =>
+      currentImages.map((image) =>
+        image.id === imageId
           ? {
-              ...img,
-              width: Math.round(img.originalWidth * scale),
-              height: Math.round(img.originalHeight * scale),
+              ...image,
+              ...fitRectToCanvas({
+                ...image,
+                width: Math.round(image.originalWidth * scale),
+                height: Math.round(image.originalHeight * scale),
+              }),
             }
-          : img,
+          : image,
       ),
     );
   }, []);
 
   const bringToFront = useCallback((imageId: string) => {
-    setImages((prev) => {
-      const maxZ = Math.max(...prev.map((img) => img.zIndex));
-      return prev.map((img) =>
-        img.id === imageId ? { ...img, zIndex: maxZ + 1 } : img,
-      );
-    });
+    setImages((currentImages) => moveLayer(currentImages, imageId, "front"));
   }, []);
 
   const sendToBack = useCallback((imageId: string) => {
-    setImages((prev) => {
-      return prev.map((img) =>
-        img.id === imageId ? { ...img, zIndex: 0 } : img,
-      );
-    });
+    setImages((currentImages) => moveLayer(currentImages, imageId, "back"));
   }, []);
 
   const moveUp = useCallback((imageId: string) => {
-    setImages((prev) => {
-      const currentImage = prev.find((img) => img.id === imageId);
-      if (!currentImage) return prev;
-
-      const higherImages = prev.filter(
-        (img) => img.zIndex > currentImage.zIndex,
-      );
-      if (higherImages.length === 0) return prev;
-
-      const nextHigher = higherImages.reduce((min, img) =>
-        img.zIndex < min.zIndex ? img : min,
-      );
-
-      return prev.map((img) => {
-        if (img.id === imageId) return { ...img, zIndex: nextHigher.zIndex };
-        if (img.id === nextHigher.id)
-          return { ...img, zIndex: currentImage.zIndex };
-        return img;
-      });
-    });
+    setImages((currentImages) => moveLayer(currentImages, imageId, "up"));
   }, []);
 
   const moveDown = useCallback((imageId: string) => {
-    setImages((prev) => {
-      const currentImage = prev.find((img) => img.id === imageId);
-      if (!currentImage) return prev;
-
-      const lowerImages = prev.filter(
-        (img) => img.zIndex < currentImage.zIndex,
-      );
-      if (lowerImages.length === 0) return prev;
-
-      const nextLower = lowerImages.reduce((max, img) =>
-        img.zIndex > max.zIndex ? img : max,
-      );
-
-      return prev.map((img) => {
-        if (img.id === imageId) return { ...img, zIndex: nextLower.zIndex };
-        if (img.id === nextLower.id)
-          return { ...img, zIndex: currentImage.zIndex };
-        return img;
-      });
-    });
+    setImages((currentImages) => moveLayer(currentImages, imageId, "down"));
   }, []);
 
-  const exportToPNG = useCallback(() => {
-    if (!canvasRef.current) return;
+  const handleDragStart = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>, imageId: string) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
 
+      const point = getCanvasPoint(event.clientX, event.clientY);
+      const image = images.find((candidate) => candidate.id === imageId);
+      if (!point || !image) return;
+
+      event.currentTarget.setPointerCapture(event.pointerId);
+      interactionRef.current = {
+        type: "drag",
+        pointerId: event.pointerId,
+        imageId,
+        offset: { x: point.x - image.x, y: point.y - image.y },
+      };
+      setSelectedImageId(imageId);
+    },
+    [getCanvasPoint, images],
+  );
+
+  const handleResizeStart = useCallback(
+    (
+      event: React.PointerEvent<HTMLElement>,
+      imageId: string,
+      handle: ResizeHandle,
+    ) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      const point = getCanvasPoint(event.clientX, event.clientY);
+      const image = images.find((candidate) => candidate.id === imageId);
+      if (!point || !image) return;
+
+      event.currentTarget.setPointerCapture(event.pointerId);
+      interactionRef.current = {
+        type: "resize",
+        pointerId: event.pointerId,
+        imageId,
+        handle,
+        startPointer: point,
+        startRect: image,
+        aspectRatio: image.originalWidth / image.originalHeight,
+      };
+    },
+    [getCanvasPoint, images],
+  );
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      const interaction = interactionRef.current;
+      if (!interaction || interaction.pointerId !== event.pointerId) return;
+
+      const point = getCanvasPoint(event.clientX, event.clientY);
+      if (!point) return;
+      event.preventDefault();
+
+      setImages((currentImages) =>
+        currentImages.map((image) => {
+          if (image.id !== interaction.imageId) return image;
+
+          if (interaction.type === "drag") {
+            return {
+              ...image,
+              ...moveRect(image, {
+                x: point.x - interaction.offset.x,
+                y: point.y - interaction.offset.y,
+              }),
+            };
+          }
+
+          return {
+            ...image,
+            ...resizeRect(
+              interaction.startRect,
+              interaction.handle,
+              point.x - interaction.startPointer.x,
+              interaction.aspectRatio,
+            ),
+          };
+        }),
+      );
+    },
+    [getCanvasPoint],
+  );
+
+  const finishInteraction = useCallback((event: React.PointerEvent) => {
+    if (interactionRef.current?.pointerId === event.pointerId) {
+      interactionRef.current = null;
+    }
+  }, []);
+
+  const handleImageKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLButtonElement>, imageId: string) => {
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        removeImage(imageId);
+        return;
+      }
+
+      const delta = getArrowKeyDelta(event.key, event.shiftKey);
+      if (!delta) return;
+      event.preventDefault();
+      setSelectedImageId(imageId);
+      setImages((currentImages) =>
+        currentImages.map((image) =>
+          image.id === imageId
+            ? {
+                ...image,
+                ...moveRect(image, {
+                  x: image.x + delta.x,
+                  y: image.y + delta.y,
+                }),
+              }
+            : image,
+        ),
+      );
+    },
+    [removeImage],
+  );
+
+  const exportToPNG = useCallback(async () => {
     const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
-    canvas.width = 800;
-    canvas.height = 600;
+    canvas.width = POSTER_WIDTH;
+    canvas.height = POSTER_HEIGHT;
+    context.imageSmoothingEnabled = false;
 
-    // Disable image smoothing for pixel art
-    ctx.imageSmoothingEnabled = false;
+    await renderLayersInOrder(
+      images,
+      (image) =>
+        new Promise<HTMLImageElement | null>((resolve) => {
+          const imageElement = new Image();
+          imageElement.onload = () => resolve(imageElement);
+          imageElement.onerror = () => resolve(null);
+          imageElement.src = image.src;
+        }),
+      (imageElement, image) => {
+        if (!imageElement) return;
+        context.drawImage(
+          imageElement,
+          image.x,
+          image.y,
+          image.width,
+          image.height,
+        );
+      },
+    );
 
-    const sortedImages = [...images].sort((a, b) => a.zIndex - b.zIndex);
-
-    const promises = sortedImages.map((image) => {
-      return new Promise<void>((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-          ctx.drawImage(img, image.x, image.y, image.width, image.height);
-          resolve();
-        };
-        img.style.imageRendering = "pixelated";
-        img.src = image.src;
-      });
-    });
-
-    Promise.all(promises).then(() => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "pixel-art-poster.png";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }
-      });
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "pixel-art-poster.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     });
   }, [images]);
 
-  const selectedImage = images.find((img) => img.id === selectedImageId);
+  const selectedImage = images.find((image) => image.id === selectedImageId);
+  const layers = [...images].sort((a, b) => b.zIndex - a.zIndex);
 
   return (
     <div className="min-h-screen p-4">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6">
-          <h2 className="mb-2 text-3xl font-bold text-neutral-900 dark:text-white">
+          <h2 className="mb-2 text-3xl font-bold text-neutral-900 text-balance dark:text-white">
             Pixel Art Poster Builder
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Import pixel art images and create crisp, pixelated compositions
+            Import pixel art images and create crisp, pixelated compositions.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <aside className="lg:col-span-1" aria-label="Poster controls">
             <Card className="p-4">
               <h2 className="mb-4 text-lg font-semibold">Tools</h2>
 
-              {/* Upload Section */}
               <div className="mb-6">
                 <Button
+                  type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="mb-2 w-full"
                   variant="outline"
                 >
-                  <Upload className="mr-2 h-4 w-4" />
+                  <Upload aria-hidden="true" className="mr-2 h-4 w-4" />
                   Import Images
                 </Button>
                 <Input
@@ -472,53 +392,49 @@ export default function PixelArtPosterBuilder() {
                   multiple
                   onChange={handleImageUpload}
                   className="hidden"
+                  aria-label="Choose pixel art images"
                 />
                 <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                   Optimized for pixel art
                 </p>
               </div>
 
-              {/* Selected Image Controls */}
-              {selectedImage && (
+              {selectedImage ? (
                 <div className="mb-6 rounded-lg bg-neutral-50 p-3 dark:bg-neutral-900">
-                  <h3 className="mb-2 text-sm font-medium">
+                  <h3 className="mb-2 truncate text-sm font-medium">
                     Selected: {selectedImage.name}
                   </h3>
-                  <div className="space-y-2">
-                    <div className="text-xs text-neutral-600 dark:text-neutral-400">
-                      Size: {selectedImage.width} × {selectedImage.height}px
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scaleImage(selectedImage.id, 0.5)}
-                      >
-                        0.5×
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scaleImage(selectedImage.id, 1)}
-                      >
-                        1×
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scaleImage(selectedImage.id, 2)}
-                      >
-                        2×
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => scaleImage(selectedImage.id, 4)}
-                      >
-                        4×
-                      </Button>
+                  <div className="space-y-3">
+                    <p
+                      className="text-xs text-neutral-600 tabular-nums dark:text-neutral-400"
+                      aria-live="polite"
+                    >
+                      Position: {selectedImage.x}, {selectedImage.y} · Size:{" "}
+                      {selectedImage.width} × {selectedImage.height}px
+                    </p>
+                    <p
+                      id="poster-keyboard-help"
+                      className="text-xs text-neutral-500 dark:text-neutral-400"
+                    >
+                      Arrow keys move by 1px. Hold Shift to move by 10px. Press
+                      Delete to remove.
+                    </p>
+                    <div className="grid grid-cols-4 gap-1" aria-label="Image scale">
+                      {[0.5, 1, 2, 4].map((scale) => (
+                        <Button
+                          key={scale}
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => scaleImage(selectedImage.id, scale)}
+                          aria-label={`Scale ${selectedImage.name} to ${scale} times its original size`}
+                        >
+                          {scale}×
+                        </Button>
+                      ))}
                     </div>
                     <Button
+                      type="button"
                       size="sm"
                       variant="outline"
                       onClick={() => resetImageSize(selectedImage.id)}
@@ -526,248 +442,232 @@ export default function PixelArtPosterBuilder() {
                     >
                       Reset Size
                     </Button>
+                    <div className="grid grid-cols-2 gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => sendToBack(selectedImage.id)}
+                      >
+                        Send to Back
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => moveDown(selectedImage.id)}
+                      >
+                        Move Down
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => moveUp(selectedImage.id)}
+                      >
+                        Move Up
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => bringToFront(selectedImage.id)}
+                      >
+                        Bring to Front
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              {/* Export Section */}
               <div className="mb-6">
                 <Button
+                  type="button"
                   onClick={exportToPNG}
                   className="w-full"
                   disabled={images.length === 0}
                 >
-                  <Download className="mr-2 h-4 w-4" />
+                  <Download aria-hidden="true" className="mr-2 h-4 w-4" />
                   Export as PNG
                 </Button>
               </div>
 
-              {/* Images List */}
               <div>
                 <h3 className="mb-2 text-sm font-medium">
                   Images ({images.length})
                 </h3>
-                <div className="max-h-64 space-y-2 overflow-y-auto">
-                  {[...images]
-                    .sort((a, b) => b.zIndex - a.zIndex)
-                    .map((image, index) => (
-                      <div
+                {layers.length > 0 ? (
+                  <ul className="max-h-64 space-y-2 overflow-y-auto">
+                    {layers.map((image, index) => (
+                      <li
                         key={image.id}
-                        className={`flex cursor-pointer items-center justify-between rounded p-2 text-sm ${
+                        className={`flex items-center justify-between rounded p-1 text-sm ${
                           selectedImageId === image.id
                             ? "bg-neutral-100 dark:bg-neutral-900"
-                            : "bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                            : "bg-neutral-50 dark:bg-neutral-800"
                         }`}
-                        onClick={() => setSelectedImageId(image.id)}
                       >
-                        <div className="flex min-w-0 flex-1 items-center">
-                          <span className="mr-2 text-xs text-neutral-400 dark:text-neutral-600">
+                        <button
+                          type="button"
+                          className="flex min-w-0 flex-1 items-center rounded p-1 text-left hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-neutral-700"
+                          onClick={() => setSelectedImageId(image.id)}
+                          aria-pressed={selectedImageId === image.id}
+                        >
+                          <span className="mr-2 text-xs text-neutral-400 tabular-nums dark:text-neutral-500">
                             #{images.length - index}
                           </span>
                           <span className="truncate">{image.name}</span>
-                        </div>
+                        </button>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveUp(image.id);
-                            }}
-                            className="h-6 w-6 text-xs text-neutral-500 hover:text-neutral-700"
-                            title="Move up"
+                            type="button"
+                            onClick={() => moveUp(image.id)}
+                            className="h-7 w-7 rounded text-xs text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+                            aria-label={`Move ${image.name} up one layer`}
+                            title="Move up one layer"
                           >
                             ↑
                           </button>
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveDown(image.id);
-                            }}
-                            className="h-6 w-6 text-xs text-neutral-500 hover:text-neutral-700"
-                            title="Move down"
+                            type="button"
+                            onClick={() => moveDown(image.id)}
+                            className="h-7 w-7 rounded text-xs text-neutral-500 hover:bg-neutral-200 hover:text-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-neutral-700 dark:hover:text-neutral-200"
+                            aria-label={`Move ${image.name} down one layer`}
+                            title="Move down one layer"
                           >
                             ↓
                           </button>
                           <Button
+                            type="button"
                             size="sm"
                             variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeImage(image.id);
-                            }}
-                            className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                            onClick={() => removeImage(image.id)}
+                            className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
+                            aria-label={`Remove ${image.name}`}
+                            title="Remove image"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 aria-hidden="true" className="h-3 w-3" />
                           </Button>
                         </div>
-                      </div>
+                      </li>
                     ))}
-                </div>
+                  </ul>
+                ) : (
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    No images imported yet.
+                  </p>
+                )}
               </div>
             </Card>
-          </div>
+          </aside>
 
-          {/* Canvas Area */}
-          <div className="lg:col-span-3">
+          <section className="min-w-0 lg:col-span-3" aria-labelledby="poster-canvas-title">
             <Card className="p-4">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Canvas</h2>
-                <div className="text-sm text-neutral-500">
-                  800 × 600px • Pixel Perfect
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <h2 id="poster-canvas-title" className="text-lg font-semibold">
+                  Canvas
+                </h2>
+                <div className="text-sm text-neutral-500 tabular-nums">
+                  {POSTER_WIDTH} × {POSTER_HEIGHT}px · Pixel Perfect
                 </div>
               </div>
 
               <div
                 ref={canvasRef}
-                className="relative h-[600px] w-full cursor-crosshair overflow-hidden rounded-lg border-2 border-dashed lg:w-[800px] border-neutral-300 bg-transparent"
+                className="relative aspect-[4/3] w-full max-w-[800px] touch-none overflow-hidden rounded-lg bg-transparent outline-2 -outline-offset-2 outline-dashed outline-neutral-300 select-none"
                 style={{
                   backgroundImage: `
-                    linear-gradient(45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%), 
-                    linear-gradient(-45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%), 
-                    linear-gradient(45deg, transparent 75%, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 75%), 
+                    linear-gradient(45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%),
+                    linear-gradient(-45deg, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 75%),
                     linear-gradient(-45deg, transparent 75%, ${theme === "dark" ? "#1D1F1F" : "#f0f0f0"} 75%)
                   `,
                   backgroundSize: "20px 20px",
                   backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
                 }}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onClick={handleCanvasClick}
+                onPointerDown={(event) => {
+                  if (event.target === event.currentTarget) {
+                    setSelectedImageId(null);
+                  }
+                }}
+                onPointerMove={handlePointerMove}
+                onPointerUp={finishInteraction}
+                onPointerCancel={finishInteraction}
               >
-                {images.length === 0 && (
-                  <div className="absolute inset-0 flex items-center justify-center text-neutral-400">
+                {images.length === 0 ? (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-neutral-400">
                     <div className="text-center">
-                      <Upload className="mx-auto mb-2 h-12 w-12 opacity-50" />
-                      <p>Import pixel art images to start building</p>
+                      <Upload
+                        aria-hidden="true"
+                        className="mx-auto mb-2 h-12 w-12 opacity-50"
+                      />
+                      <p>Import pixel art images to start building.</p>
                     </div>
                   </div>
-                )}
+                ) : null}
 
                 {[...images]
                   .sort((a, b) => a.zIndex - b.zIndex)
-                  .map((image) => (
-                    <TooltipProvider key={image.id}>
-                      <Tooltip
-                        delayDuration={100}
-                        open={selectedImageId === image.id && !dragState.isDragging}
+                  .map((image) => {
+                    const isSelected = selectedImageId === image.id;
+                    return (
+                      <div
+                        key={image.id}
+                        className={`group absolute ${
+                          isSelected ? "ring-2 ring-neutral-500" : ""
+                        }`}
+                        style={{
+                          left: `${(image.x / POSTER_WIDTH) * 100}%`,
+                          top: `${(image.y / POSTER_HEIGHT) * 100}%`,
+                          width: `${(image.width / POSTER_WIDTH) * 100}%`,
+                          height: `${(image.height / POSTER_HEIGHT) * 100}%`,
+                          zIndex: image.zIndex,
+                        }}
                       >
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`group absolute select-none ${
-                              selectedImageId === image.id
-                                ? "ring-2 ring-neutral-400"
-                                : ""
-                            }`}
-                            style={{
-                              left: image.x,
-                              top: image.y,
-                              width: image.width,
-                              height: image.height,
-                              zIndex:
-                                dragState.dragId === image.id ||
-                                resizeState.resizeId === image.id
-                                  ? 9999
-                                  : image.zIndex,
-                            }}
-                          >
-                            <img
-                              src={image.src || "/placeholder.svg"}
-                              alt={image.name}
-                              className="rendering-pixelated h-full w-full cursor-move object-cover"
-                              draggable={false}
-                              onMouseDown={(e) => handleMouseDown(e, image.id)}
-                            />
-
-                            {/* Resize Handles */}
-                            {selectedImageId === image.id && (
-                              <>
-                                {/* Corner handles */}
-                                <div
-                                  className="absolute -top-1 -left-1 h-3 w-3 cursor-nw-resize border border-white bg-neutral-500"
-                                  onMouseDown={(e) =>
-                                    handleResizeStart(e, image.id, "nw")
-                                  }
-                                />
-                                <div
-                                  className="absolute -top-1 -right-1 h-3 w-3 cursor-ne-resize border border-white bg-neutral-500"
-                                  onMouseDown={(e) =>
-                                    handleResizeStart(e, image.id, "ne")
-                                  }
-                                />
-                                <div
-                                  className="absolute -bottom-1 -left-1 h-3 w-3 cursor-sw-resize border border-white bg-neutral-500"
-                                  onMouseDown={(e) =>
-                                    handleResizeStart(e, image.id, "sw")
-                                  }
-                                />
-                                <div
-                                  className="absolute -right-1 -bottom-1 h-3 w-3 cursor-se-resize border border-white bg-neutral-500"
-                                  onMouseDown={(e) =>
-                                    handleResizeStart(e, image.id, "se")
-                                  }
-                                />
-                              </>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side="top"
-                          align="start"
-                          className="bg-transparent p-0 text-black [--primary:theme(colors.black/0)]"
-                          alignOffset={0}
+                        <button
+                          type="button"
+                          className="absolute inset-0 h-full w-full cursor-move touch-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          onClick={() => setSelectedImageId(image.id)}
+                          onPointerDown={(event) =>
+                            handleDragStart(event, image.id)
+                          }
+                          onKeyDown={(event) =>
+                            handleImageKeyDown(event, image.id)
+                          }
+                          aria-label={`${image.name}, position ${image.x}, ${image.y}, size ${image.width} by ${image.height} pixels`}
+                          aria-describedby={
+                            isSelected ? "poster-keyboard-help" : undefined
+                          }
                         >
-                          {/* Layer Controls */}
-                          {/* {selectedImageId === image.id && ( */}
-                          <div className="flex rounded border bg-white shadow-lg">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                bringToFront(image.id);
-                              }}
-                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
-                              title="Bring to front"
-                            >
-                              ↑↑
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                moveUp(image.id);
-                              }}
-                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
-                              title="Move up"
-                            >
-                              ↑
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                moveDown(image.id);
-                              }}
-                              className="border-r px-2 py-1 text-xs hover:bg-neutral-100"
-                              title="Move down"
-                            >
-                              ↓
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                sendToBack(image.id);
-                              }}
-                              className="px-2 py-1 text-xs hover:bg-neutral-100"
-                              title="Send to back"
-                            >
-                              ↓↓
-                            </button>
-                          </div>
-                          {/* )} */}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
+                          <img
+                            src={image.src}
+                            alt=""
+                            className="rendering-pixelated pointer-events-none h-full w-full object-fill"
+                            draggable={false}
+                          />
+                        </button>
+
+                        {isSelected
+                          ? RESIZE_HANDLES.map(({ handle, label, position }) => (
+                              <span
+                                key={handle}
+                                className={`absolute z-10 flex h-6 w-6 touch-none items-center justify-center rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${position}`}
+                                onPointerDown={(event) =>
+                                  handleResizeStart(event, image.id, handle)
+                                }
+                                title={`Resize from ${label}`}
+                                aria-hidden="true"
+                              >
+                                <span className="h-3 w-3 border border-white bg-neutral-600" />
+                              </span>
+                            ))
+                          : null}
+                      </div>
+                    );
+                  })}
               </div>
             </Card>
-          </div>
+          </section>
         </div>
       </div>
     </div>
