@@ -3,6 +3,9 @@ dist/
 # generated types
 .astro/
 
+# generated Superpowers documentation
+docs/superpowers/
+
 # dependencies
 node_modules/
 
