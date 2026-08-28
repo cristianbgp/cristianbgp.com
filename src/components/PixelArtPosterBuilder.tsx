@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { Download, Trash2, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import {
   clientPointToCanvas,
   fitRectToCanvas,
   getArrowKeyDelta,
+  getScaleOptions,
   moveRect,
   POSTER_HEIGHT,
   POSTER_WIDTH,
@@ -18,7 +20,12 @@ import {
   type PosterRect,
   type ResizeHandle,
 } from "@/lib/poster-geometry";
-import { addLayer, moveLayer, removeLayer } from "@/lib/poster-layers";
+import {
+  addLayer,
+  insertLayer,
+  moveLayer,
+  removeLayer,
+} from "@/lib/poster-layers";
 
 interface ImageItem extends PosterRect {
   id: string;
@@ -132,12 +139,35 @@ export default function PixelArtPosterBuilder() {
     [],
   );
 
-  const removeImage = useCallback((imageId: string) => {
-    setImages((currentImages) => removeLayer(currentImages, imageId));
-    setSelectedImageId((currentId) =>
-      currentId === imageId ? null : currentId,
-    );
-  }, []);
+  const removeImage = useCallback(
+    (imageId: string) => {
+      const orderedImages = [...images].sort((a, b) => a.zIndex - b.zIndex);
+      const removedImage = orderedImages.find((image) => image.id === imageId);
+      if (!removedImage) return;
+
+      const previousIndex = orderedImages.findIndex(
+        (image) => image.id === imageId,
+      );
+      setImages((currentImages) => removeLayer(currentImages, imageId));
+      setSelectedImageId((currentId) =>
+        currentId === imageId ? null : currentId,
+      );
+
+      toast(`${removedImage.name} removed`, {
+        duration: 10_000,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setImages((currentImages) =>
+              insertLayer(currentImages, removedImage, previousIndex),
+            );
+            setSelectedImageId(removedImage.id);
+          },
+        },
+      });
+    },
+    [images],
+  );
 
   const resetImageSize = useCallback((imageId: string) => {
     setImages((currentImages) =>
@@ -356,6 +386,12 @@ export default function PixelArtPosterBuilder() {
   }, [images]);
 
   const selectedImage = images.find((image) => image.id === selectedImageId);
+  const scaleOptions = selectedImage
+    ? getScaleOptions(
+        selectedImage.originalWidth,
+        selectedImage.originalHeight,
+      )
+    : [];
   const layers = [...images].sort((a, b) => b.zIndex - a.zIndex);
 
   return (
@@ -419,19 +455,35 @@ export default function PixelArtPosterBuilder() {
                       Arrow keys move by 1px. Hold Shift to move by 10px. Press
                       Delete to remove.
                     </p>
-                    <div className="grid grid-cols-4 gap-1" aria-label="Image scale">
-                      {[0.5, 1, 2, 4].map((scale) => (
-                        <Button
-                          key={scale}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => scaleImage(selectedImage.id, scale)}
-                          aria-label={`Scale ${selectedImage.name} to ${scale} times its original size`}
-                        >
-                          {scale}×
-                        </Button>
-                      ))}
+                    <div
+                      className="grid grid-cols-[repeat(auto-fit,minmax(3.5rem,1fr))] gap-1"
+                      aria-label="Image scale"
+                    >
+                      {scaleOptions.map((option) => {
+                        const isActive =
+                          selectedImage.width === option.width &&
+                          selectedImage.height === option.height;
+                        const accessibleLabel =
+                          option.label === "Fit"
+                            ? `Fit ${selectedImage.name} to canvas`
+                            : `Scale ${selectedImage.name} to ${option.scale} times its original size`;
+
+                        return (
+                          <Button
+                            key={`${option.width}x${option.height}`}
+                            type="button"
+                            size="sm"
+                            variant={isActive ? "secondary" : "outline"}
+                            onClick={() =>
+                              scaleImage(selectedImage.id, option.scale)
+                            }
+                            aria-label={accessibleLabel}
+                            aria-pressed={isActive}
+                          >
+                            {option.label}
+                          </Button>
+                        );
+                      })}
                     </div>
                     <Button
                       type="button"

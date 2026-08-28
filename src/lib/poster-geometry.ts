@@ -14,6 +14,13 @@ export type PosterRect = Point & {
 
 export type ResizeHandle = "nw" | "ne" | "sw" | "se";
 
+export type PosterScaleOption = {
+  scale: number;
+  width: number;
+  height: number;
+  label: string;
+};
+
 type DisplayBounds = {
   left: number;
   top: number;
@@ -53,6 +60,40 @@ export function fitRectToCanvas(rect: PosterRect): PosterRect {
   const height = Math.round(rect.height * scale);
 
   return moveRect({ ...rect, width, height }, { x: rect.x, y: rect.y });
+}
+
+export function getScaleOptions(
+  originalWidth: number,
+  originalHeight: number,
+  scales: number[] = [0.5, 1, 2, 4],
+): PosterScaleOption[] {
+  const seenSizes = new Set<string>();
+
+  return scales.flatMap((scale) => {
+    const requestedWidth = Math.round(originalWidth * scale);
+    const requestedHeight = Math.round(originalHeight * scale);
+    const fitted = fitRectToCanvas({
+      x: 0,
+      y: 0,
+      width: requestedWidth,
+      height: requestedHeight,
+    });
+    const sizeKey = `${fitted.width}x${fitted.height}`;
+    if (seenSizes.has(sizeKey)) return [];
+
+    seenSizes.add(sizeKey);
+    return [
+      {
+        scale,
+        width: fitted.width,
+        height: fitted.height,
+        label:
+          fitted.width !== requestedWidth || fitted.height !== requestedHeight
+            ? "Fit"
+            : `${scale}×`,
+      },
+    ];
+  });
 }
 
 export function resizeRect(

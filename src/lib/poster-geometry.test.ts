@@ -4,6 +4,7 @@ import {
   clientPointToCanvas,
   fitRectToCanvas,
   getArrowKeyDelta,
+  getScaleOptions,
   moveRect,
   resizeRect,
 } from "./poster-geometry";
@@ -75,5 +76,23 @@ describe("getArrowKeyDelta", () => {
     expect(getArrowKeyDelta("ArrowLeft", false)).toEqual({ x: -1, y: 0 });
     expect(getArrowKeyDelta("ArrowDown", true)).toEqual({ x: 0, y: 10 });
     expect(getArrowKeyDelta("Enter", false)).toBeNull();
+  });
+});
+
+describe("getScaleOptions", () => {
+  test("collapses capped duplicate presets into one Fit option", () => {
+    expect(getScaleOptions(960, 480)).toEqual([
+      { scale: 0.5, width: 480, height: 240, label: "0.5×" },
+      { scale: 1, width: 800, height: 400, label: "Fit" },
+    ]);
+  });
+
+  test("keeps every distinct preset for small images", () => {
+    expect(getScaleOptions(100, 50)).toEqual([
+      { scale: 0.5, width: 50, height: 25, label: "0.5×" },
+      { scale: 1, width: 100, height: 50, label: "1×" },
+      { scale: 2, width: 200, height: 100, label: "2×" },
+      { scale: 4, width: 400, height: 200, label: "4×" },
+    ]);
   });
 });

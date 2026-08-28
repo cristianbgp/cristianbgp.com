@@ -20,6 +20,21 @@ export function removeLayer<T extends Layer>(layers: T[], id: string): T[] {
   return normalizeLayers(layers.filter((layer) => layer.id !== id));
 }
 
+export function insertLayer<T extends Layer>(
+  layers: T[],
+  layer: T,
+  index: number,
+): T[] {
+  const ordered = normalizeLayers(layers);
+  const targetIndex = Math.min(Math.max(index, 0), ordered.length);
+  ordered.splice(targetIndex, 0, layer);
+
+  return ordered.map((item, itemIndex) => ({
+    ...item,
+    zIndex: itemIndex + 1,
+  }));
+}
+
 export function moveLayer<T extends Layer>(
   layers: T[],
   id: string,

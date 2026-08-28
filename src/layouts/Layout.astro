@@ -9,25 +9,43 @@ type Props = {
   title?: string;
   description?: string;
   image?: ImageMetadata;
+  imageAlt?: string;
   lang?: string;
   ogType?: "website" | "article";
+  publishedTime?: Date;
+  modifiedTime?: Date;
+  tags?: string[];
+  structuredData?: Record<string, unknown>;
 };
 
 const {
   title,
   description,
   image,
+  imageAlt,
   lang = "en",
   ogType = "website",
+  publishedTime,
+  modifiedTime,
+  tags,
+  structuredData,
 } = Astro.props;
 
-const articles = getPublishedArticles(await getCollection("articles")).map(
+const [articleEntries, toolEntries] = await Promise.all([
+  getCollection("articles"),
+  getCollection("tools"),
+]);
+
+const articles = getPublishedArticles(articleEntries).map(
   ({ id, data }) => ({
     id,
     title: data.title,
     archived: data.archived ?? false,
   }),
 );
+const tools = toolEntries
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .map(({ id, data }) => ({ id, title: data.title, url: data.url }));
 ---
 
 <html lang={lang}>
@@ -36,7 +54,13 @@ const articles = getPublishedArticles(await getCollection("articles")).map(
       title={title}
       description={description}
       image={image}
+      imageAlt={imageAlt}
       ogType={ogType}
+      lang={lang}
+      publishedTime={publishedTime}
+      modifiedTime={modifiedTime}
+      tags={tags}
+      structuredData={structuredData}
     />
     <script is:inline>
       const getThemePreference = () => {
@@ -79,7 +103,12 @@ const articles = getPublishedArticles(await getCollection("articles")).map(
       class="bg-gradient-to-b to-gray-200 from-white dark:to-[#313131] dark:from-[#000000]"
     >
       <slot />
-      <AppCommand articles={articles} client:only />
+      <AppCommand
+        articles={articles}
+        tools={tools}
+        currentPath={Astro.url.pathname}
+        client:only
+      />
     </main>
     <Toaster client:only />
   </body>

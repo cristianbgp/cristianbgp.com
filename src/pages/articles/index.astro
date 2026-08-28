@@ -3,10 +3,10 @@ import { getCollection } from "astro:content";
 import FormattedDate from "@/components/FormattedDate.astro";
 import Layout from "@/layouts/Layout.astro";
 import { Separator } from "@/components/ui/separator";
-import { TypingText } from "@/components/animate-ui/text/typing";
 import { cn } from "@/lib/utils";
 import { CommandKeyTrigger } from "@/components/AppCommand";
 import { getPublishedArticles } from "@/lib/articles";
+import { estimateReadingMinutes } from "@/lib/article-metadata";
 
 const posts = getPublishedArticles(await getCollection("articles"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
@@ -19,16 +19,7 @@ const posts = getPublishedArticles(await getCollection("articles"))
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
   >
-    <div class="text-balance">
-      <h1 class="sr-only">Articles</h1>
-      <TypingText
-        aria-hidden="true"
-        className="text-4xl font-bold"
-        text="Articles"
-        cursor
-        client:load
-      />
-    </div>
+    <h1 class="text-balance text-4xl font-bold">Articles</h1>
     <CommandKeyTrigger client:only />
     <div class="max-w-2xl mx-auto p-6 space-y-10">
       <section>
@@ -39,9 +30,14 @@ const posts = getPublishedArticles(await getCollection("articles"))
         }
         <ul class="flex flex-col gap-4">
           {
-            posts.map((post) => (
-              <li class="flex flex-col gap-2 group">
-                <a href={`/articles/${post.id}/`}>
+            posts.map((post) => {
+              const readingMinutes = estimateReadingMinutes(post.body ?? "");
+              return (
+              <li class="group flex flex-col gap-2">
+                <a
+                  href={`/articles/${post.id}/`}
+                  class="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
                   {post.data.archived && (
                     <p class="text-sm text-neutral-500">Archived</p>
                   )}
@@ -53,13 +49,28 @@ const posts = getPublishedArticles(await getCollection("articles"))
                   >
                     {post.data.title}
                   </h2>
-                  <p class="date">
+                  <div class="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
                     <FormattedDate date={post.data.date} />
+                    <span aria-hidden="true">·</span>
+                    <span>{readingMinutes} min read</span>
+                  </div>
+                  <p class="mt-2 text-pretty text-sm text-muted-foreground">
+                    {post.data.description}
                   </p>
+                  {post.data.tags.length > 0 && (
+                    <ul class="mt-3 flex flex-wrap gap-2" aria-label="Article tags">
+                      {post.data.tags.map((tag) => (
+                        <li class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                          {tag}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </a>
                 <Separator className="border-2 rounded-full group-hover:border-neutral-600 transition-colors duration-300 ease-in-out dark:group-hover:border-neutral-400 group-last:hidden" />
               </li>
-            ))
+              );
+            })
           }
         </ul>
       </section>

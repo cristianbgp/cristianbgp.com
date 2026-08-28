@@ -35,11 +35,28 @@ import {
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
 import { Button } from "@/components/ui/button";
+import { isExternalUrl, normalizePathname } from "@/lib/navigation";
 
 type CommandArticle = {
   id: string;
   title: string;
   archived: boolean;
+};
+
+type CommandTool = {
+  id: string;
+  title: string;
+  url: string;
+};
+
+const toolIcons: Record<string, typeof BoxIcon> = {
+  space: CircleDotIcon,
+  notes: NotebookTextIcon,
+  dollarpe: CircleDollarSignIcon,
+  holidays: CalendarDaysIcon,
+  "json-tree-viewer": Code2Icon,
+  "pixel-art-poster": SquareDashedMousePointerIcon,
+  microinteractions: SparklesIcon,
 };
 
 function getCommandKey() {
@@ -80,10 +97,15 @@ export function CommandKeyTrigger() {
 
 export function AppCommand({
   articles,
+  tools,
+  currentPath,
 }: {
   articles: CommandArticle[];
+  tools: CommandTool[];
+  currentPath: string;
 }) {
   const isCommandOpen = useStore($isCommandOpen);
+  const normalizedCurrentPath = normalizePathname(currentPath);
   const [search, setSearch] = useState("");
   const { theme, setTheme } = useTheme();
   const navigate = (path: string) => {
@@ -148,93 +170,48 @@ export function AppCommand({
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Tools">
-          <CommandItem
-            onSelect={() => {
-              onSelect(() =>
-                window.open("https://space.cristianbgp.com", "_blank")
-              );
-            }}
-          >
-            <CircleDotIcon />
-            <span>Space</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              onSelect(() =>
-                window.open("https://notes.cristianbgp.com", "_blank")
-              );
-            }}
-          >
-            <NotebookTextIcon />
-            <span>Notes</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => {
-              onSelect(() =>
-                window.open("https://dollarpe.cristianbgp.com", "_blank")
-              );
-            }}
-          >
-            <CircleDollarSignIcon />
-            <span>Dollarpe</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() =>
-              onSelect(() =>
-                window.open("https://holiday.cristianbgp.com", "_blank")
-              )
-            }
-          >
-            <CalendarDaysIcon />
-            <span>Holidays</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => onSelect(() => navigate("/tools/json-tree-viewer"))}
-          >
-            <Code2Icon />
-            <span>JSON Tree Viewer</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() => onSelect(() => navigate("/tools/pixel-art-poster"))}
-          >
-            <SquareDashedMousePointerIcon />
-            <span>Pixel Art Poster</span>
-          </CommandItem>
-          <CommandItem
-            onSelect={() =>
-              onSelect(() =>
-                window.open(
-                  "https://microinteractions.cristianbgp.com",
-                  "_blank"
-                )
-              )
-            }
-          >
-            <SparklesIcon />
-            <span>Microinteractions</span>
-          </CommandItem>
+          {tools.map((tool) => {
+            const ToolIcon = toolIcons[tool.id] ?? BoxIcon;
+            return (
+              <CommandItem
+                key={tool.id}
+                onSelect={() =>
+                  onSelect(() => {
+                    if (isExternalUrl(tool.url)) {
+                      window.open(tool.url, "_blank", "noopener,noreferrer");
+                    } else {
+                      navigate(tool.url);
+                    }
+                  })
+                }
+              >
+                <ToolIcon />
+                <span>{tool.title}</span>
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Personal">
-          {location.pathname !== "/" && (
+          {normalizedCurrentPath !== "/" && (
             <CommandItem onSelect={() => onSelect(() => navigate("/"))}>
               <Home />
               <span>Home</span>
             </CommandItem>
           )}
-          {location.pathname !== "/articles" && (
+          {normalizedCurrentPath !== "/articles" && (
             <CommandItem onSelect={() => onSelect(() => navigate("/articles"))}>
               <BookOpenIcon />
               <span>Articles</span>
             </CommandItem>
           )}
-          {location.pathname !== "/tools" && (
+          {normalizedCurrentPath !== "/tools" && (
             <CommandItem onSelect={() => onSelect(() => navigate("/tools"))}>
               <BoxIcon />
               <span>Tools</span>
             </CommandItem>
           )}
-          {location.pathname !== "/resume" && (
+          {normalizedCurrentPath !== "/resume" && (
             <CommandItem onSelect={() => onSelect(() => navigate("/resume"))}>
               <User />
               <span>Resume</span>

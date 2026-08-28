@@ -5,6 +5,8 @@ import { Image } from "astro:assets";
 import Layout from "./Layout.astro";
 import { AlertTriangleIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buildArticleStructuredData } from "@/lib/article-metadata";
+import ogImage from "@/assets/og-image.jpg";
 
 type Props = CollectionEntry<"articles">["data"];
 
@@ -18,14 +20,30 @@ const {
   lang,
   archived,
 } = Astro.props;
+
+const articleUrl = new URL(Astro.url.pathname, Astro.site).toString();
+const structuredData = buildArticleStructuredData({
+  title,
+  description,
+  url: articleUrl,
+  imageUrl: new URL((heroImage ?? ogImage).src, Astro.site).toString(),
+  language: lang,
+  publishedAt: date,
+  modifiedAt: updatedDate,
+});
 ---
 
 <Layout
   title={title}
   description={description}
   image={heroImage}
+  imageAlt={title}
   lang={lang}
   ogType="article"
+  publishedTime={date}
+  modifiedTime={updatedDate}
+  tags={tags}
+  structuredData={structuredData}
 >
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
@@ -35,7 +53,7 @@ const {
         <div class="hero-image">
           {
             heroImage && (
-              <Image width={1020} height={510} src={heroImage} alt="" />
+              <Image width={1020} height={510} src={heroImage} alt={title} />
             )
           }
         </div>
@@ -65,11 +83,11 @@ const {
               archived && (
                 <div class="text-gray-600 mt-2 dark:text-gray-400 flex flex-col">
                   <div class="flex items-center gap-2">
-                    <AlertTriangleIcon className="w-4 h-4" />
+                    <AlertTriangleIcon aria-hidden="true" className="w-4 h-4" />
                     <span>Archived article</span>
                   </div>
                   <span>
-                    This article is archived and it's not being updated.
+                    This article is archived and is no longer updated.
                   </span>
                 </div>
               )
@@ -79,7 +97,7 @@ const {
             />
           </div>
           <div
-            class="prose !text-left dark:prose-invert prose-h1:font-bold prose-h1:text-xl prose-a:text-gray-600 dark:prose-a:text-gray-400 prose-p:text-justify prose-img:rounded-xl prose-headings:underline prose-blockquote:border-neutral-600 dark:prose-blockquote:border-neutral-400"
+            class="prose !text-left dark:prose-invert prose-h1:font-bold prose-h1:text-xl prose-a:text-gray-600 dark:prose-a:text-gray-400 prose-p:text-left prose-img:rounded-xl prose-headings:scroll-mt-24 prose-blockquote:border-neutral-600 dark:prose-blockquote:border-neutral-400"
           >
             <slot />
           </div>

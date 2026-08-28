@@ -7,8 +7,8 @@ tags: ["hygen", "templates", "generators"]
 lang: "es"
 archived: true
 ---
-import { Image } from "astro:assets";
-import articleTemplate from "../../assets/hygen/article-template.gif";
+import articleTemplateVideo from "../../assets/hygen/article-template.mp4?url";
+import articleTemplatePoster from "../../assets/hygen/article-template-poster.webp";
 import FileTree from "@/components/FileTree";
 
 Lo que quería implementar era una funcionalidad que extrañaba cuando usaba [Contentz](https://github.com/contentz-tech/contentz) para éste blog, en el cual usando `contentz write` me generaba el archivo listo para empezar a escribir. Así fue como decidí usar `hygen` para obtener ésta misma funcionalidad ahora que mi blog migró a NextJS.
@@ -132,4 +132,18 @@ yarn new:article
 
 Y nos preguntará por el nombre y descripción del artículo
 
-<Image src={articleTemplate} alt="Generando nuestro template desde CLI" />
+<video
+  controls
+  muted
+  loop
+  playsInline
+  preload="metadata"
+  width="898"
+  height="382"
+  poster={articleTemplatePoster.src}
+  className="w-full rounded-xl"
+  aria-label="Generando nuestro template desde la terminal"
+>
+  <source src={articleTemplateVideo} type="video/mp4" />
+  Tu navegador no puede reproducir este video.
+</video>

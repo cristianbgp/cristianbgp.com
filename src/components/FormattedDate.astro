@@ -4,15 +4,11 @@ interface Props {
 		locale?: string;
 }
 
+import { formatContentDate } from "@/lib/article-metadata";
+
 const { date, locale = "en" } = Astro.props;
 ---
 
 <time datetime={date.toISOString()} class="text-gray-600 dark:text-gray-400">
-	{
-			date.toLocaleDateString(locale, {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-		})
-	}
+	{formatContentDate(date, locale)}
 </time>

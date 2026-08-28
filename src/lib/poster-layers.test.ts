@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { addLayer, moveLayer, removeLayer } from "./poster-layers";
+import {
+  addLayer,
+  insertLayer,
+  moveLayer,
+  removeLayer,
+} from "./poster-layers";
 
 type Layer = { id: string; zIndex: number };
 
@@ -37,6 +42,23 @@ describe("poster layers", () => {
     expect(moveLayer(layers, "back", "up")).toEqual([
       { id: "middle", zIndex: 1 },
       { id: "back", zIndex: 2 },
+      { id: "front", zIndex: 3 },
+    ]);
+  });
+
+  test("inserts a restored layer at its previous stack position", () => {
+    expect(
+      insertLayer(
+        [
+          { id: "back", zIndex: 1 },
+          { id: "front", zIndex: 2 },
+        ],
+        { id: "restored", zIndex: 99 },
+        1,
+      ),
+    ).toEqual([
+      { id: "back", zIndex: 1 },
+      { id: "restored", zIndex: 2 },
       { id: "front", zIndex: 3 },
     ]);
   });

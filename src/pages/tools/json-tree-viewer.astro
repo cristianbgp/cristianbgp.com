@@ -1,7 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { CommandKeyTrigger } from "@/components/AppCommand";
-import { TypingText } from "@/components/animate-ui/text/typing";
 import JsonViewerPlayground from "@/components/JsonViewerPlayground";
 ---
 
@@ -12,16 +11,7 @@ import JsonViewerPlayground from "@/components/JsonViewerPlayground";
   <div
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
   >
-    <div class="text-balance">
-      <h1 class="sr-only">JSON Tree Viewer</h1>
-      <TypingText
-        aria-hidden="true"
-        className="text-4xl font-bold"
-        text="JSON Tree Viewer"
-        cursor
-        client:load
-      />
-    </div>
+    <h1 class="text-balance text-4xl font-bold">JSON Tree Viewer</h1>
     <CommandKeyTrigger client:only />
     <JsonViewerPlayground client:only />
   </div>
