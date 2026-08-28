@@ -1,7 +1,7 @@
 import { SITE_TITLE } from "@/consts";
 
 export function getDocumentTitle(title?: string): string {
-  return title ? `${title} — ${SITE_TITLE}` : SITE_TITLE;
+  return title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
 }
 
 type PageMetadata = {

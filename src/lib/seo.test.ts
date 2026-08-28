@@ -8,7 +8,7 @@ describe("getDocumentTitle", () => {
   });
 
   test("combines a page title with the site title", () => {
-    expect(getDocumentTitle("Articles")).toBe("Articles — Cristian Granda");
+    expect(getDocumentTitle("Articles")).toBe("Articles | Cristian Granda");
   });
 });
 
