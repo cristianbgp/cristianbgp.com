@@ -129,6 +129,39 @@ export function getRailDragProgress(
   );
 }
 
+export function getRailDragScrollTop(
+  startScrollTop: number,
+  startPosition: number,
+  currentPosition: number,
+  gain: number,
+  minimum: number,
+  maximum: number,
+) {
+  return clamp(
+    startScrollTop + (currentPosition - startPosition) * Math.max(gain, 0),
+    minimum,
+    maximum,
+  );
+}
+
+export function getSmoothedRailScrollTop(
+  currentScrollTop: number,
+  targetScrollTop: number,
+  strength: number,
+  snapDistance: number,
+) {
+  if (
+    Math.abs(targetScrollTop - currentScrollTop) <= Math.max(snapDistance, 0)
+  ) {
+    return targetScrollTop;
+  }
+
+  return (
+    currentScrollTop +
+    (targetScrollTop - currentScrollTop) * clamp(strength, 0, 1)
+  );
+}
+
 export function getRailPointerTransition(
   dragging: boolean,
   phase: "move" | "press" | "release" | "cancel" | "leave",

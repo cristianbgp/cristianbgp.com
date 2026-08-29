@@ -6,12 +6,14 @@ import {
   getNearestProgressIndex,
   getPreviewPanelOffset,
   getProximityStrength,
+  getRailDragScrollTop,
   getRailDragProgress,
   getRailDashScale,
   getRailPointerTransition,
   getRailSegmentProgresses,
   getReadingProgress,
   getScrollTopForProgress,
+  getSmoothedRailScrollTop,
   hasRailDragMoved,
 } from "./reading-rail";
 
@@ -122,6 +124,26 @@ describe("rail pointer interaction", () => {
     );
     expect(getRailDragProgress(0.98, 300, 340, 448)).toBe(1);
     expect(getRailDragProgress(0.02, 300, 260, 448)).toBe(0);
+  });
+
+  test("uses a controlled mobile drag gain instead of mapping to article length", () => {
+    expect(getRailDragScrollTop(1_000, 240, 340, 5, 200, 6_927)).toBe(
+      1_500,
+    );
+  });
+
+  test("keeps mobile drag targets inside the readable scroll range", () => {
+    expect(getRailDragScrollTop(300, 240, 100, 5, 200, 6_927)).toBe(200);
+    expect(getRailDragScrollTop(6_700, 240, 340, 5, 200, 6_927)).toBe(
+      6_927,
+    );
+  });
+
+  test("approaches the latest drag target without exposing every pointer event", () => {
+    expect(getSmoothedRailScrollTop(1_000, 1_500, 0.3, 0.5)).toBe(1_150);
+    expect(getSmoothedRailScrollTop(1_499.7, 1_500, 0.3, 0.5)).toBe(
+      1_500,
+    );
   });
 
   test("hover movement never requests scrolling", () => {

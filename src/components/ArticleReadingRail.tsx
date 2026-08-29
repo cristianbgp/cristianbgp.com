@@ -13,12 +13,14 @@ import {
   getActiveHeadingIndex,
   getNearestProgressIndex,
   getPreviewPanelOffset,
+  getRailDragScrollTop,
   getRailDragProgress,
   getRailPointerTransition,
   getRailDashScale,
   getRailSegmentProgresses,
   getReadingProgress,
   getScrollTopForProgress,
+  getSmoothedRailScrollTop,
   hasRailDragMoved,
 } from "@/lib/reading-rail";
 
@@ -54,7 +56,9 @@ type ActiveDrag = {
   pointerId: number;
   startPosition: number;
   startProgress: number;
+  startScrollTop: number;
   trackLength: number;
+  useControlledGain: boolean;
 };
 
 const EMPTY_METRICS: ReadingMetrics = {
@@ -68,6 +72,9 @@ const HEADING_SELECTOR =
   "[data-article-body] h2[id], [data-article-body] h3[id]";
 const RAIL_SEGMENTS = getRailSegmentProgresses(56);
 const DRAG_THRESHOLD = 6;
+const MOBILE_DRAG_GAIN = 5;
+const DRAG_SMOOTHING_STRENGTH = 0.3;
+const DRAG_SNAP_DISTANCE = 0.5;
 
 export function ArticleReadingRail({
   side = "left",
@@ -84,6 +91,7 @@ export function ArticleReadingRail({
   const progressPercentRef = useRef(0);
   const activeIndexRef = useRef(-1);
   const activeDragRef = useRef<ActiveDrag | null>(null);
+  const dragTargetScrollRef = useRef<number | null>(null);
   const hoveringRef = useRef(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -129,6 +137,7 @@ export function ArticleReadingRail({
       if (!transition.dragging) return;
 
       const bounds = event.currentTarget.getBoundingClientRect();
+      dragTargetScrollRef.current = null;
       activeDragRef.current = {
         moved: false,
         orientation,
@@ -136,8 +145,11 @@ export function ArticleReadingRail({
         startPosition:
           orientation === "vertical" ? event.clientY : event.clientX,
         startProgress: progressRef.current,
+        startScrollTop: window.scrollY,
         trackLength:
           orientation === "vertical" ? bounds.height : bounds.width,
+        useControlledGain:
+          window.innerWidth < 1280 || event.pointerType !== "mouse",
       };
       event.preventDefault();
     },
@@ -165,14 +177,26 @@ export function ArticleReadingRail({
       }
       if (!drag.moved) return;
 
-      scrollToProgress(
-        getRailDragProgress(
-          drag.startProgress,
-          drag.startPosition,
-          currentPosition,
-          drag.trackLength,
-        ),
-      );
+      const { start, end } = metricsRef.current;
+      dragTargetScrollRef.current = drag.useControlledGain
+        ? getRailDragScrollTop(
+            drag.startScrollTop,
+            drag.startPosition,
+            currentPosition,
+            MOBILE_DRAG_GAIN,
+            start,
+            end,
+          )
+        : getScrollTopForProgress(
+            getRailDragProgress(
+              drag.startProgress,
+              drag.startPosition,
+              currentPosition,
+              drag.trackLength,
+            ),
+            start,
+            end,
+          );
     };
 
     const finishPointerGesture = (
@@ -188,6 +212,7 @@ export function ArticleReadingRail({
           : horizontalTrackRef.current;
       const bounds = track?.getBoundingClientRect();
       if (!cancelled && !drag.moved && bounds) {
+        dragTargetScrollRef.current = null;
         const position =
           drag.orientation === "vertical"
             ? event.clientY - bounds.top
@@ -196,6 +221,8 @@ export function ArticleReadingRail({
           drag.orientation === "vertical" ? bounds.height : bounds.width;
         scrollToProgress(length > 0 ? clamp(position / length, 0, 1) : 0);
       }
+
+      if (cancelled) dragTargetScrollRef.current = null;
 
       activeDragRef.current = null;
       const endedInsideTrack = bounds
@@ -335,6 +362,20 @@ export function ArticleReadingRail({
 
     let frame = 0;
     const updateReadingPosition = () => {
+      const dragTarget = dragTargetScrollRef.current;
+      if (dragTarget !== null) {
+        const nextScrollTop = getSmoothedRailScrollTop(
+          window.scrollY,
+          dragTarget,
+          DRAG_SMOOTHING_STRENGTH,
+          DRAG_SNAP_DISTANCE,
+        );
+        window.scrollTo({ top: nextScrollTop, behavior: "auto" });
+        if (nextScrollTop === dragTarget) {
+          dragTargetScrollRef.current = null;
+        }
+      }
+
       const { start, end, headingTops } = metricsRef.current;
       const progress = getReadingProgress(window.scrollY, start, end);
       progressRef.current = progress;
