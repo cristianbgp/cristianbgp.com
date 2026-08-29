@@ -106,14 +106,6 @@ export function getPreviewPanelOffset(
   );
 }
 
-export function hasRailDragMoved(
-  startPosition: number,
-  currentPosition: number,
-  threshold: number,
-) {
-  return Math.abs(currentPosition - startPosition) >= Math.max(threshold, 0);
-}
-
 export function getRailDragProgress(
   startProgress: number,
   startPosition: number,
@@ -131,48 +123,29 @@ export function getRailDragProgress(
 
 export function getRailDragScrollTop(
   startScrollTop: number,
-  startPosition: number,
-  currentPosition: number,
+  offset: number,
   gain: number,
   minimum: number,
   maximum: number,
 ) {
   return clamp(
-    startScrollTop + (currentPosition - startPosition) * Math.max(gain, 0),
+    startScrollTop + offset * Math.max(gain, 0),
     minimum,
     maximum,
   );
 }
 
-export function getSmoothedRailScrollTop(
-  currentScrollTop: number,
-  targetScrollTop: number,
-  strength: number,
-  snapDistance: number,
+export function getRailViewportOffset(
+  startPosition: number,
+  currentPosition: number,
 ) {
-  if (
-    Math.abs(targetScrollTop - currentScrollTop) <= Math.max(snapDistance, 0)
-  ) {
-    return targetScrollTop;
-  }
-
-  return (
-    currentScrollTop +
-    (targetScrollTop - currentScrollTop) * clamp(strength, 0, 1)
-  );
+  return currentPosition - startPosition;
 }
 
-export function getRailPointerTransition(
-  dragging: boolean,
-  phase: "move" | "press" | "release" | "cancel" | "leave",
+export function hasRailDragMoved(
+  startPosition: number,
+  currentPosition: number,
+  threshold: number,
 ) {
-  if (phase === "press") {
-    return { dragging: true, shouldScroll: false };
-  }
-
-  if (phase === "move") {
-    return { dragging, shouldScroll: dragging };
-  }
-
-  return { dragging: false, shouldScroll: false };
+  return Math.abs(currentPosition - startPosition) >= Math.max(threshold, 0);
 }

@@ -7,20 +7,20 @@ import {
   useRef,
   useState,
 } from "react";
+import { useMotionValueEvent, useScroll } from "motion/react";
 
 import {
   clamp,
   getActiveHeadingIndex,
   getNearestProgressIndex,
   getPreviewPanelOffset,
-  getRailDragScrollTop,
   getRailDragProgress,
-  getRailPointerTransition,
   getRailDashScale,
+  getRailDragScrollTop,
   getRailSegmentProgresses,
+  getRailViewportOffset,
   getReadingProgress,
   getScrollTopForProgress,
-  getSmoothedRailScrollTop,
   hasRailDragMoved,
 } from "@/lib/reading-rail";
 
@@ -71,10 +71,8 @@ const EMPTY_METRICS: ReadingMetrics = {
 const HEADING_SELECTOR =
   "[data-article-body] h2[id], [data-article-body] h3[id]";
 const RAIL_SEGMENTS = getRailSegmentProgresses(56);
-const DRAG_THRESHOLD = 6;
 const MOBILE_DRAG_GAIN = 5;
-const DRAG_SMOOTHING_STRENGTH = 0.3;
-const DRAG_SNAP_DISTANCE = 0.5;
+const DRAG_THRESHOLD = 6;
 
 export function ArticleReadingRail({
   side = "left",
@@ -91,12 +89,14 @@ export function ArticleReadingRail({
   const progressPercentRef = useRef(0);
   const activeIndexRef = useRef(-1);
   const activeDragRef = useRef<ActiveDrag | null>(null);
-  const dragTargetScrollRef = useRef<number | null>(null);
+  const pendingDragPositionRef = useRef<number | null>(null);
+  const dragFrameRef = useRef<number | null>(null);
   const hoveringRef = useRef(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const [progressPercent, setProgressPercent] = useState(0);
+  const { scrollY } = useScroll();
 
   const updateDashWave = useCallback((focusProgress: number) => {
     dashElementsRef.current.forEach((dash, index) => {
@@ -128,16 +128,88 @@ export function ArticleReadingRail({
     });
   }, []);
 
+  const applyDragPosition = useCallback(
+    (drag: ActiveDrag, currentPosition: number) => {
+      const offset = getRailViewportOffset(
+        drag.startPosition,
+        currentPosition,
+      );
+      const { start, end } = metricsRef.current;
+      const nextScrollTop = drag.useControlledGain
+        ? getRailDragScrollTop(
+            drag.startScrollTop,
+            offset,
+            MOBILE_DRAG_GAIN,
+            start,
+            end,
+          )
+        : getScrollTopForProgress(
+            getRailDragProgress(
+              drag.startProgress,
+              0,
+              offset,
+              drag.trackLength,
+            ),
+            start,
+            end,
+          );
+
+      window.scrollTo({ top: nextScrollTop, behavior: "auto" });
+    },
+    [],
+  );
+
+  const scheduleDragPosition = useCallback(
+    (currentPosition: number) => {
+      pendingDragPositionRef.current = currentPosition;
+      if (dragFrameRef.current !== null) return;
+
+      dragFrameRef.current = window.requestAnimationFrame(() => {
+        dragFrameRef.current = null;
+        const drag = activeDragRef.current;
+        const pendingPosition = pendingDragPositionRef.current;
+        if (!drag || pendingPosition === null) return;
+
+        applyDragPosition(drag, pendingPosition);
+      });
+    },
+    [applyDragPosition],
+  );
+
+  const handleTrackTap = useCallback(
+    (
+      point: { x: number; y: number },
+      orientation: ActiveDrag["orientation"],
+    ) => {
+      const track =
+        orientation === "vertical"
+          ? verticalTrackRef.current
+          : horizontalTrackRef.current;
+      const bounds = track?.getBoundingClientRect();
+      if (!bounds) return;
+
+      const position =
+        orientation === "vertical"
+          ? point.y - bounds.top
+          : point.x - bounds.left;
+      const length = orientation === "vertical" ? bounds.height : bounds.width;
+      scrollToProgress(length > 0 ? clamp(position / length, 0, 1) : 0);
+    },
+    [scrollToProgress],
+  );
+
   const handleTrackPointerDown = useCallback(
     (
       event: PointerEvent<HTMLDivElement>,
-      orientation: "vertical" | "horizontal",
+      orientation: ActiveDrag["orientation"],
     ) => {
-      const transition = getRailPointerTransition(false, "press");
-      if (!transition.dragging) return;
+      if (dragFrameRef.current !== null) {
+        window.cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+      }
+      pendingDragPositionRef.current = null;
 
       const bounds = event.currentTarget.getBoundingClientRect();
-      dragTargetScrollRef.current = null;
       activeDragRef.current = {
         moved: false,
         orientation,
@@ -162,6 +234,14 @@ export function ArticleReadingRail({
       orientation: ActiveDrag["orientation"],
     ) => (orientation === "vertical" ? event.clientY : event.clientX);
 
+    const cancelScheduledDrag = () => {
+      if (dragFrameRef.current !== null) {
+        window.cancelAnimationFrame(dragFrameRef.current);
+        dragFrameRef.current = null;
+      }
+      pendingDragPositionRef.current = null;
+    };
+
     const handlePointerMove = (event: globalThis.PointerEvent) => {
       const drag = activeDragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
@@ -177,26 +257,7 @@ export function ArticleReadingRail({
       }
       if (!drag.moved) return;
 
-      const { start, end } = metricsRef.current;
-      dragTargetScrollRef.current = drag.useControlledGain
-        ? getRailDragScrollTop(
-            drag.startScrollTop,
-            drag.startPosition,
-            currentPosition,
-            MOBILE_DRAG_GAIN,
-            start,
-            end,
-          )
-        : getScrollTopForProgress(
-            getRailDragProgress(
-              drag.startProgress,
-              drag.startPosition,
-              currentPosition,
-              drag.trackLength,
-            ),
-            start,
-            end,
-          );
+      scheduleDragPosition(currentPosition);
     };
 
     const finishPointerGesture = (
@@ -206,25 +267,24 @@ export function ArticleReadingRail({
       const drag = activeDragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
+      const currentPosition = getEventPosition(event, drag.orientation);
+      if (!cancelled && drag.moved) {
+        applyDragPosition(drag, currentPosition);
+      } else if (!cancelled) {
+        handleTrackTap(
+          { x: event.clientX, y: event.clientY },
+          drag.orientation,
+        );
+      }
+
+      cancelScheduledDrag();
+      activeDragRef.current = null;
+
       const track =
         drag.orientation === "vertical"
           ? verticalTrackRef.current
           : horizontalTrackRef.current;
       const bounds = track?.getBoundingClientRect();
-      if (!cancelled && !drag.moved && bounds) {
-        dragTargetScrollRef.current = null;
-        const position =
-          drag.orientation === "vertical"
-            ? event.clientY - bounds.top
-            : event.clientX - bounds.left;
-        const length =
-          drag.orientation === "vertical" ? bounds.height : bounds.width;
-        scrollToProgress(length > 0 ? clamp(position / length, 0, 1) : 0);
-      }
-
-      if (cancelled) dragTargetScrollRef.current = null;
-
-      activeDragRef.current = null;
       const endedInsideTrack = bounds
         ? event.clientX >= bounds.left &&
           event.clientX <= bounds.right &&
@@ -248,11 +308,17 @@ export function ArticleReadingRail({
     window.addEventListener("pointercancel", handlePointerCancel);
 
     return () => {
+      cancelScheduledDrag();
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerCancel);
     };
-  }, [restoreReadingWave, scrollToProgress]);
+  }, [
+    applyDragPosition,
+    handleTrackTap,
+    restoreReadingWave,
+    scheduleDragPosition,
+  ]);
 
   const handleVerticalPointerMove = useCallback(
     (event: PointerEvent<HTMLElement>) => {
@@ -309,6 +375,45 @@ export function ArticleReadingRail({
     [scrollToProgress],
   );
 
+  const updateReadingPosition = useCallback(
+    (scrollTop: number) => {
+      const { start, end, headingTops } = metricsRef.current;
+      const progress = getReadingProgress(scrollTop, start, end);
+      progressRef.current = progress;
+      if (!hoveringRef.current) updateDashWave(progress);
+      rootRef.current?.style.setProperty(
+        "--reading-progress",
+        String(progress),
+      );
+      rootRef.current?.style.setProperty(
+        "--vertical-thumb-y",
+        `${progress * Math.max(trackLengthsRef.current.vertical - 6, 0)}px`,
+      );
+      rootRef.current?.style.setProperty(
+        "--horizontal-thumb-x",
+        `${progress * Math.max(trackLengthsRef.current.horizontal - 6, 0)}px`,
+      );
+
+      const nextPercent = Math.round(progress * 100);
+      if (nextPercent !== progressPercentRef.current) {
+        progressPercentRef.current = nextPercent;
+        setProgressPercent(nextPercent);
+      }
+
+      const nextActiveIndex = getActiveHeadingIndex(
+        headingTops,
+        scrollTop + window.innerHeight * 0.28,
+      );
+      if (nextActiveIndex !== activeIndexRef.current) {
+        activeIndexRef.current = nextActiveIndex;
+        setActiveIndex(nextActiveIndex);
+      }
+    },
+    [updateDashWave],
+  );
+
+  useMotionValueEvent(scrollY, "change", updateReadingPosition);
+
   useEffect(() => {
     const articleRoot = document.querySelector<HTMLElement>(
       "[data-article-root]",
@@ -348,76 +453,24 @@ export function ArticleReadingRail({
       }));
       headingDataRef.current = nextHeadings;
       setHeadings(nextHeadings);
+      updateReadingPosition(window.scrollY);
     };
 
-    measure();
     dashElementsRef.current = [
       ...(rootRef.current?.querySelectorAll<HTMLElement>(
         "[data-reading-dash]",
       ) ?? []),
     ];
+    measure();
     const resizeObserver = new ResizeObserver(measure);
     resizeObserver.observe(articleRoot);
     window.addEventListener("resize", measure);
 
-    let frame = 0;
-    const updateReadingPosition = () => {
-      const dragTarget = dragTargetScrollRef.current;
-      if (dragTarget !== null) {
-        const nextScrollTop = getSmoothedRailScrollTop(
-          window.scrollY,
-          dragTarget,
-          DRAG_SMOOTHING_STRENGTH,
-          DRAG_SNAP_DISTANCE,
-        );
-        window.scrollTo({ top: nextScrollTop, behavior: "auto" });
-        if (nextScrollTop === dragTarget) {
-          dragTargetScrollRef.current = null;
-        }
-      }
-
-      const { start, end, headingTops } = metricsRef.current;
-      const progress = getReadingProgress(window.scrollY, start, end);
-      progressRef.current = progress;
-      if (!hoveringRef.current) updateDashWave(progress);
-      rootRef.current?.style.setProperty(
-        "--reading-progress",
-        String(progress),
-      );
-      rootRef.current?.style.setProperty(
-        "--vertical-thumb-y",
-        `${progress * Math.max(trackLengthsRef.current.vertical - 6, 0)}px`,
-      );
-      rootRef.current?.style.setProperty(
-        "--horizontal-thumb-x",
-        `${progress * Math.max(trackLengthsRef.current.horizontal - 6, 0)}px`,
-      );
-
-      const nextPercent = Math.round(progress * 100);
-      if (nextPercent !== progressPercentRef.current) {
-        progressPercentRef.current = nextPercent;
-        setProgressPercent(nextPercent);
-      }
-
-      const nextActiveIndex = getActiveHeadingIndex(
-        headingTops,
-        window.scrollY + window.innerHeight * 0.28,
-      );
-      if (nextActiveIndex !== activeIndexRef.current) {
-        activeIndexRef.current = nextActiveIndex;
-        setActiveIndex(nextActiveIndex);
-      }
-
-      frame = window.requestAnimationFrame(updateReadingPosition);
-    };
-    frame = window.requestAnimationFrame(updateReadingPosition);
-
     return () => {
-      window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", measure);
       resizeObserver.disconnect();
     };
-  }, [updateDashWave]);
+  }, [updateReadingPosition]);
 
   const sliderProps = {
     role: "slider",
@@ -449,16 +502,16 @@ export function ArticleReadingRail({
           aria-orientation="vertical"
           className="article-reading-rail__track article-reading-rail__track--vertical"
           onPointerDown={(event) => {
-            handleVerticalPointerMove(event);
+            if (event.pointerType === "mouse") {
+              handleVerticalPointerMove(event);
+            }
             handleTrackPointerDown(event, "vertical");
           }}
           onPointerMove={(event) => {
-            handleVerticalPointerMove(event);
+            if (event.pointerType === "mouse" && !activeDragRef.current) {
+              handleVerticalPointerMove(event);
+            }
           }}
-          onPointerUp={(event) => {
-            if (event.pointerType !== "mouse") restoreReadingWave();
-          }}
-          onPointerCancel={restoreReadingWave}
           onPointerLeave={(event) => {
             if (event.pointerType === "mouse" && !activeDragRef.current) {
               restoreReadingWave();

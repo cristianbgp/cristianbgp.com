@@ -6,14 +6,13 @@ import {
   getNearestProgressIndex,
   getPreviewPanelOffset,
   getProximityStrength,
-  getRailDragScrollTop,
   getRailDragProgress,
   getRailDashScale,
-  getRailPointerTransition,
+  getRailDragScrollTop,
   getRailSegmentProgresses,
+  getRailViewportOffset,
   getReadingProgress,
   getScrollTopForProgress,
-  getSmoothedRailScrollTop,
   hasRailDragMoved,
 } from "./reading-rail";
 
@@ -112,12 +111,7 @@ describe("getPreviewPanelOffset", () => {
   });
 });
 
-describe("rail pointer interaction", () => {
-  test("waits for deliberate movement before treating a gesture as a drag", () => {
-    expect(hasRailDragMoved(300, 305, 6)).toBe(false);
-    expect(hasRailDragMoved(300, 306, 6)).toBe(true);
-  });
-
+describe("rail drag interaction", () => {
   test("maps movement relative to the progress where dragging started", () => {
     expect(getRailDragProgress(0.1, 300, 320, 448)).toBeCloseTo(
       0.1446428571,
@@ -126,48 +120,21 @@ describe("rail pointer interaction", () => {
     expect(getRailDragProgress(0.02, 300, 260, 448)).toBe(0);
   });
 
-  test("uses a controlled mobile drag gain instead of mapping to article length", () => {
-    expect(getRailDragScrollTop(1_000, 240, 340, 5, 200, 6_927)).toBe(
-      1_500,
-    );
+  test("maps pointer offsets to a controlled readable scroll position", () => {
+    expect(getRailDragScrollTop(1_000, 100, 5, 200, 6_927)).toBe(1_500);
+  });
+
+  test("derives drag distance from stable viewport coordinates", () => {
+    expect(getRailViewportOffset(260, 360)).toBe(100);
+  });
+
+  test("only treats a stationary release as a tap", () => {
+    expect(hasRailDragMoved(260, 265, 6)).toBe(false);
+    expect(hasRailDragMoved(260, 266, 6)).toBe(true);
   });
 
   test("keeps mobile drag targets inside the readable scroll range", () => {
-    expect(getRailDragScrollTop(300, 240, 100, 5, 200, 6_927)).toBe(200);
-    expect(getRailDragScrollTop(6_700, 240, 340, 5, 200, 6_927)).toBe(
-      6_927,
-    );
-  });
-
-  test("approaches the latest drag target without exposing every pointer event", () => {
-    expect(getSmoothedRailScrollTop(1_000, 1_500, 0.3, 0.5)).toBe(1_150);
-    expect(getSmoothedRailScrollTop(1_499.7, 1_500, 0.3, 0.5)).toBe(
-      1_500,
-    );
-  });
-
-  test("hover movement never requests scrolling", () => {
-    const transition = getRailPointerTransition(false, "move");
-
-    expect(transition).toEqual({ dragging: false, shouldScroll: false });
-  });
-
-  test("press arms dragging without moving the page", () => {
-    expect(getRailPointerTransition(false, "press")).toEqual({
-      dragging: true,
-      shouldScroll: false,
-    });
-    expect(getRailPointerTransition(true, "move")).toEqual({
-      dragging: true,
-      shouldScroll: true,
-    });
-    expect(getRailPointerTransition(true, "leave")).toEqual({
-      dragging: false,
-      shouldScroll: false,
-    });
-    expect(getRailPointerTransition(false, "move")).toEqual({
-      dragging: false,
-      shouldScroll: false,
-    });
+    expect(getRailDragScrollTop(300, -140, 5, 200, 6_927)).toBe(200);
+    expect(getRailDragScrollTop(6_700, 100, 5, 200, 6_927)).toBe(6_927);
   });
 });
