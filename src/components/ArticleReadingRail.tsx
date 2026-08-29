@@ -58,7 +58,7 @@ const HEADING_SELECTOR =
 const RAIL_SEGMENTS = getRailSegmentProgresses(56);
 
 export function ArticleReadingRail({
-  side = "right",
+  side = "left",
   desktopSide = "left",
 }: ArticleReadingRailProps) {
   const rootRef = useRef<HTMLElement>(null);

@@ -5,6 +5,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ArticleReadingRail } from "./ArticleReadingRail";
 
 describe("ArticleReadingRail placement", () => {
+  test("defaults both mobile and desktop rails to the left", () => {
+    const markup = renderToStaticMarkup(createElement(ArticleReadingRail));
+
+    expect(markup).toContain('data-side="left"');
+    expect(markup).toContain('data-desktop-side="left"');
+  });
+
   test("exposes independent mobile and desktop sides to the layout", () => {
     const markup = renderToStaticMarkup(
       createElement(ArticleReadingRail, {
