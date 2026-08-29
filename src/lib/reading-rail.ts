@@ -149,3 +149,13 @@ export function hasRailDragMoved(
 ) {
   return Math.abs(currentPosition - startPosition) >= Math.max(threshold, 0);
 }
+
+export function getRailGestureEndAction(
+  pointerType: string,
+  moved: boolean,
+  cancelled: boolean,
+) {
+  if (cancelled) return "none" as const;
+  if (moved) return "flush-drag" as const;
+  return pointerType === "mouse" ? ("tap" as const) : ("none" as const);
+}

@@ -14,6 +14,7 @@ import {
   getActiveHeadingIndex,
   getNearestProgressIndex,
   getPreviewPanelOffset,
+  getRailGestureEndAction,
   getRailDragProgress,
   getRailDashScale,
   getRailDragScrollTop,
@@ -168,6 +169,7 @@ export function ArticleReadingRail({
         dragFrameRef.current = null;
         const drag = activeDragRef.current;
         const pendingPosition = pendingDragPositionRef.current;
+        pendingDragPositionRef.current = null;
         if (!drag || pendingPosition === null) return;
 
         applyDragPosition(drag, pendingPosition);
@@ -267,17 +269,23 @@ export function ArticleReadingRail({
       const drag = activeDragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
-      const currentPosition = getEventPosition(event, drag.orientation);
-      if (!cancelled && drag.moved) {
-        applyDragPosition(drag, currentPosition);
-      } else if (!cancelled) {
+      const action = getRailGestureEndAction(
+        event.pointerType,
+        drag.moved,
+        cancelled,
+      );
+      const pendingPosition = pendingDragPositionRef.current;
+      cancelScheduledDrag();
+
+      if (action === "flush-drag" && pendingPosition !== null) {
+        applyDragPosition(drag, pendingPosition);
+      } else if (action === "tap") {
         handleTrackTap(
           { x: event.clientX, y: event.clientY },
           drag.orientation,
         );
       }
 
-      cancelScheduledDrag();
       activeDragRef.current = null;
 
       const track =

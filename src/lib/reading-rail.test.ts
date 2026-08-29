@@ -11,6 +11,7 @@ import {
   getRailDragScrollTop,
   getRailSegmentProgresses,
   getRailViewportOffset,
+  getRailGestureEndAction,
   getReadingProgress,
   getScrollTopForProgress,
   hasRailDragMoved,
@@ -112,6 +113,17 @@ describe("getPreviewPanelOffset", () => {
 });
 
 describe("rail drag interaction", () => {
+  test("ends touch gestures without converting them into absolute jumps", () => {
+    expect(getRailGestureEndAction("touch", false, false)).toBe("none");
+    expect(getRailGestureEndAction("touch", true, false)).toBe("flush-drag");
+    expect(getRailGestureEndAction("touch", true, true)).toBe("none");
+  });
+
+  test("keeps stationary mouse releases available for click navigation", () => {
+    expect(getRailGestureEndAction("mouse", false, false)).toBe("tap");
+    expect(getRailGestureEndAction("mouse", true, false)).toBe("flush-drag");
+  });
+
   test("maps movement relative to the progress where dragging started", () => {
     expect(getRailDragProgress(0.1, 300, 320, 448)).toBeCloseTo(
       0.1446428571,
