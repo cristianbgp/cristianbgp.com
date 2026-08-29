@@ -1,15 +1,22 @@
 ---
 import { getCollection } from "astro:content";
-import FormattedDate from "@/components/FormattedDate.astro";
+import ArticleListItem from "@/components/ArticleListItem.astro";
+import { ArticleFilters } from "@/components/ArticleFilters";
 import Layout from "@/layouts/Layout.astro";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import { CommandKeyTrigger } from "@/components/AppCommand";
-import { getPublishedArticles } from "@/lib/articles";
-import { estimateReadingMinutes } from "@/lib/article-metadata";
+import {
+  getArticleFilterOptions,
+  getPublishedArticles,
+} from "@/lib/articles";
 
 const posts = getPublishedArticles(await getCollection("articles"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const { languages, tags } = getArticleFilterOptions(posts);
+const currentTotal = posts.filter((post) => !post.data.archived).length;
+
+const languageNames = new Intl.DisplayNames(["en"], { type: "language" });
+const formatLanguage = (language: string) =>
+  languageNames.of(language) ?? language.toUpperCase();
 ---
 
 <Layout
@@ -17,63 +24,44 @@ const posts = getPublishedArticles(await getCollection("articles"))
   description="Articles about software development, product building, and game design."
 >
   <div
-    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+    class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
     <h1 class="text-balance text-4xl font-bold">Articles</h1>
     <CommandKeyTrigger client:only />
-    <div class="max-w-2xl mx-auto p-6 space-y-10">
-      <section>
-        {
-          posts.length === 0 && (
-            <p class="text-center text-2xl font-bold">Soon…</p>
-          )
-        }
-        <ul class="flex flex-col gap-4">
-          {
-            posts.map((post) => {
-              const readingMinutes = estimateReadingMinutes(post.body ?? "");
-              return (
-              <li class="group flex flex-col gap-2">
-                <a
-                  href={`/articles/${post.id}/`}
-                  class="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {post.data.archived && (
-                    <p class="text-sm text-neutral-500">Archived</p>
-                  )}
-                  <h2
-                    class={cn(
-                      "title text-2xl font-bold",
-                      post.data.archived && "line-through"
-                    )}
-                  >
-                    {post.data.title}
-                  </h2>
-                  <div class="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-                    <FormattedDate date={post.data.date} />
-                    <span aria-hidden="true">·</span>
-                    <span>{readingMinutes} min read</span>
-                  </div>
-                  <p class="mt-2 text-pretty text-sm text-muted-foreground">
-                    {post.data.description}
-                  </p>
-                  {post.data.tags.length > 0 && (
-                    <ul class="mt-3 flex flex-wrap gap-2" aria-label="Article tags">
-                      {post.data.tags.map((tag) => (
-                        <li class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                          {tag}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </a>
-                <Separator className="border-2 rounded-full group-hover:border-neutral-600 transition-colors duration-300 ease-in-out dark:group-hover:border-neutral-400 group-last:hidden" />
-              </li>
-              );
-            })
-          }
-        </ul>
-      </section>
+    <div class="w-full max-w-2xl mx-auto p-6 space-y-10">
+      {
+        posts.length > 0 && (
+          <ArticleFilters
+            client:load
+            languages={languages.map((language) => ({
+              value: language,
+              label: formatLanguage(language),
+            }))}
+            tags={tags}
+            total={posts.length}
+            initialVisibleTotal={currentTotal}
+          />
+        )
+      }
+
+      <p
+        class="mt-6 rounded-xl border border-dashed p-6 text-center text-muted-foreground"
+        data-no-results
+        role="status"
+        hidden
+      >
+        No articles match those filters.
+      </p>
+
+      {
+        posts.length === 0 ? (
+          <p class="text-center text-2xl font-bold">Soon…</p>
+        ) : (
+          <ul class="mt-6 flex flex-col gap-4" data-article-list>
+            {posts.map((post) => <ArticleListItem post={post} />)}
+          </ul>
+        )
+      }
     </div>
   </div>
 </Layout>

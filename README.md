@@ -1,6 +1,6 @@
 # cristianbgp.com
 
-Personal website for [Cristian Granda](https://cristianbgp.com), built with Astro. It brings together a landing page, articles, a résumé, and a directory of small web tools.
+Personal website for [Cristian Granda](https://cristianbgp.com), built with Astro. It brings together a landing page, articles, a resume, and a directory of small web tools.
 
 ## Stack
 
@@ -21,7 +21,7 @@ Personal website for [Cristian Granda](https://cristianbgp.com), built with Astr
 | `/tools` | Directory of internal and external tools |
 | `/tools/json-tree-viewer` | Interactive JSON editor and tree viewer |
 | `/tools/pixel-art-poster` | Pixel-art poster composer and PNG exporter |
-| `/resume` | Résumé generated from structured JSON |
+| `/resume` | Resume generated from structured JSON |
 | `/rss.xml` | Article RSS feed |
 
 The site also provides a command palette on every page. Press <kbd>⌘</kbd> + <kbd>K</kbd> on macOS or <kbd>Ctrl</kbd> + <kbd>K</kbd> elsewhere to open it. The theme shortcut is <kbd>⌘/Ctrl</kbd> + <kbd>I</kbd>.
@@ -66,7 +66,7 @@ The site will be available at [http://localhost:4321](http://localhost:4321).
 │   │   └── tools/           # Tool directory entries
 │   ├── hooks/               # React hooks
 │   ├── layouts/             # Shared page and article layouts
-│   ├── lib/                 # Utilities and résumé data
+│   ├── lib/                 # Utilities and resume data
 │   ├── pages/               # File-based routes
 │   ├── stores/              # Shared Nanostores state
 │   ├── styles/              # Global styles and theme tokens
@@ -116,9 +116,9 @@ date: "2026-01-01"
 
 The URL may point to a route in this project or to an external website. Internal interactive tools also need a page in `src/pages/tools/` and their React component in `src/components/`.
 
-## Résumé
+## Resume
 
-Résumé content is stored in `src/lib/resume.json` and rendered by `src/components/ResumeViewer.astro`. Update the JSON data to change work experience, skills, education, languages, or profile links.
+Resume content is stored in `src/lib/resume.json` and rendered by `src/components/ResumeViewer.astro`. Update the JSON data to change work experience, skills, education, languages, or profile links.
 
 ## Deployment
 

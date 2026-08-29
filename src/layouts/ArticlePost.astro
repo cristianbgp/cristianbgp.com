@@ -5,6 +5,7 @@ import { Image } from "astro:assets";
 import Layout from "./Layout.astro";
 import { AlertTriangleIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ArticleReadingRail } from "@/components/ArticleReadingRail";
 import { buildArticleStructuredData } from "@/lib/article-metadata";
 import ogImage from "@/assets/og-image.jpg";
 
@@ -46,8 +47,10 @@ const structuredData = buildArticleStructuredData({
   structuredData={structuredData}
 >
   <div
+    data-article-root
     class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
   >
+    <ArticleReadingRail client:load side="right" desktopSide="left" />
     <div class="max-w-full lg:max-w-2xl mx-auto p-6 space-y-10">
       <article>
         <div class="hero-image">
@@ -97,6 +100,7 @@ const structuredData = buildArticleStructuredData({
             />
           </div>
           <div
+            data-article-body
             class="prose !text-left dark:prose-invert prose-h1:font-bold prose-h1:text-xl prose-a:text-gray-600 dark:prose-a:text-gray-400 prose-p:text-left prose-img:rounded-xl prose-headings:scroll-mt-24 prose-blockquote:border-neutral-600 dark:prose-blockquote:border-neutral-400"
           >
             <slot />

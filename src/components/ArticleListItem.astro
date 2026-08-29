@@ -1,0 +1,66 @@
+---
+import type { CollectionEntry } from "astro:content";
+import FormattedDate from "@/components/FormattedDate.astro";
+import { Separator } from "@/components/ui/separator";
+import { estimateReadingMinutes } from "@/lib/article-metadata";
+import { cn } from "@/lib/utils";
+
+type Props = {
+  post: CollectionEntry<"articles">;
+};
+
+const { post } = Astro.props;
+const readingMinutes = estimateReadingMinutes(post.body ?? "");
+---
+
+<li
+  class="group flex flex-col gap-2"
+  data-article-item
+  data-article-group={post.data.archived ? "archive" : "current"}
+  data-language={post.data.lang}
+  data-tags={JSON.stringify(post.data.tags)}
+>
+  <a
+    href={`/articles/${post.id}/`}
+    class="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    {
+      post.data.archived && (
+        <p class="text-sm text-neutral-500">Archived</p>
+      )
+    }
+    <h3
+      class={cn(
+        "title text-2xl font-bold",
+        post.data.archived && "line-through",
+      )}
+    >
+      {post.data.title}
+    </h3>
+    <div
+      class="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground"
+    >
+      <FormattedDate date={post.data.date} locale={post.data.lang} />
+      <span aria-hidden="true">·</span>
+      <span>{readingMinutes} min read</span>
+    </div>
+    <p class="mt-2 text-pretty text-sm text-muted-foreground">
+      {post.data.description}
+    </p>
+    {
+      post.data.tags.length > 0 && (
+        <ul class="mt-3 flex flex-wrap gap-2" aria-label="Article tags">
+          {post.data.tags.map((tag) => (
+            <li class="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              {tag}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </a>
+  <Separator
+    data-article-separator
+    className="border-2 rounded-full group-hover:border-neutral-600 transition-colors duration-300 ease-in-out dark:group-hover:border-neutral-400"
+  />
+</li>
