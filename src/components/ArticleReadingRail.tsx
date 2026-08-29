@@ -13,11 +13,13 @@ import {
   getActiveHeadingIndex,
   getNearestProgressIndex,
   getPreviewPanelOffset,
+  getRailDragProgress,
   getRailPointerTransition,
   getRailDashScale,
   getRailSegmentProgresses,
   getReadingProgress,
   getScrollTopForProgress,
+  hasRailDragMoved,
 } from "@/lib/reading-rail";
 
 type Heading = {
@@ -46,6 +48,15 @@ type RailStyle = CSSProperties & {
   "--reading-progress"?: number;
 };
 
+type ActiveDrag = {
+  moved: boolean;
+  orientation: "vertical" | "horizontal";
+  pointerId: number;
+  startPosition: number;
+  startProgress: number;
+  trackLength: number;
+};
+
 const EMPTY_METRICS: ReadingMetrics = {
   start: 0,
   end: 0,
@@ -56,6 +67,7 @@ const EMPTY_METRICS: ReadingMetrics = {
 const HEADING_SELECTOR =
   "[data-article-body] h2[id], [data-article-body] h3[id]";
 const RAIL_SEGMENTS = getRailSegmentProgresses(56);
+const DRAG_THRESHOLD = 6;
 
 export function ArticleReadingRail({
   side = "left",
@@ -71,7 +83,7 @@ export function ArticleReadingRail({
   const progressRef = useRef(0);
   const progressPercentRef = useRef(0);
   const activeIndexRef = useRef(-1);
-  const draggingRef = useRef<"vertical" | "horizontal" | null>(null);
+  const activeDragRef = useRef<ActiveDrag | null>(null);
   const hoveringRef = useRef(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -108,80 +120,112 @@ export function ArticleReadingRail({
     });
   }, []);
 
-  const getPointerProgress = useCallback(
-    (
-      event: PointerEvent<HTMLElement>,
-      orientation: "vertical" | "horizontal",
-    ) => {
-      const track =
-        orientation === "vertical"
-          ? verticalTrackRef.current
-          : horizontalTrackRef.current;
-      if (!track) return 0;
-
-      const bounds = track.getBoundingClientRect();
-      const position =
-        orientation === "vertical"
-          ? event.clientY - bounds.top
-          : event.clientX - bounds.left;
-      const length =
-        orientation === "vertical" ? bounds.height : bounds.width;
-
-      return length > 0 ? clamp(position / length, 0, 1) : 0;
-    },
-    [],
-  );
-
   const handleTrackPointerDown = useCallback(
     (
       event: PointerEvent<HTMLDivElement>,
       orientation: "vertical" | "horizontal",
     ) => {
       const transition = getRailPointerTransition(false, "press");
-      draggingRef.current = transition.dragging ? orientation : null;
-      event.currentTarget.setPointerCapture(event.pointerId);
-      if (transition.shouldScroll) {
-        scrollToProgress(getPointerProgress(event, orientation));
-      }
-    },
-    [getPointerProgress, scrollToProgress],
-  );
+      if (!transition.dragging) return;
 
-  const handleTrackPointerMove = useCallback(
-    (
-      event: PointerEvent<HTMLDivElement>,
-      orientation: "vertical" | "horizontal",
-    ) => {
-      const transition = getRailPointerTransition(
-        draggingRef.current === orientation,
-        "move",
-      );
-      draggingRef.current = transition.dragging ? orientation : null;
-      if (transition.shouldScroll) {
-        scrollToProgress(getPointerProgress(event, orientation));
-      }
-    },
-    [getPointerProgress, scrollToProgress],
-  );
-
-  const handleTrackPointerEnd = useCallback(
-    (
-      event: PointerEvent<HTMLDivElement>,
-      phase: "release" | "cancel" | "leave",
-    ) => {
-      const transition = getRailPointerTransition(
-        draggingRef.current !== null,
-        phase,
-      );
-      draggingRef.current = transition.dragging
-        ? draggingRef.current
-        : null;
-      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-        event.currentTarget.releasePointerCapture(event.pointerId);
-      }
+      const bounds = event.currentTarget.getBoundingClientRect();
+      activeDragRef.current = {
+        moved: false,
+        orientation,
+        pointerId: event.pointerId,
+        startPosition:
+          orientation === "vertical" ? event.clientY : event.clientX,
+        startProgress: progressRef.current,
+        trackLength:
+          orientation === "vertical" ? bounds.height : bounds.width,
+      };
+      event.preventDefault();
     },
     [],
   );
+
+  useEffect(() => {
+    const getEventPosition = (
+      event: globalThis.PointerEvent,
+      orientation: ActiveDrag["orientation"],
+    ) => (orientation === "vertical" ? event.clientY : event.clientX);
+
+    const handlePointerMove = (event: globalThis.PointerEvent) => {
+      const drag = activeDragRef.current;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      if (event.cancelable) event.preventDefault();
+      const currentPosition = getEventPosition(event, drag.orientation);
+      if (!drag.moved) {
+        drag.moved = hasRailDragMoved(
+          drag.startPosition,
+          currentPosition,
+          DRAG_THRESHOLD,
+        );
+      }
+      if (!drag.moved) return;
+
+      scrollToProgress(
+        getRailDragProgress(
+          drag.startProgress,
+          drag.startPosition,
+          currentPosition,
+          drag.trackLength,
+        ),
+      );
+    };
+
+    const finishPointerGesture = (
+      event: globalThis.PointerEvent,
+      cancelled: boolean,
+    ) => {
+      const drag = activeDragRef.current;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      const track =
+        drag.orientation === "vertical"
+          ? verticalTrackRef.current
+          : horizontalTrackRef.current;
+      const bounds = track?.getBoundingClientRect();
+      if (!cancelled && !drag.moved && bounds) {
+        const position =
+          drag.orientation === "vertical"
+            ? event.clientY - bounds.top
+            : event.clientX - bounds.left;
+        const length =
+          drag.orientation === "vertical" ? bounds.height : bounds.width;
+        scrollToProgress(length > 0 ? clamp(position / length, 0, 1) : 0);
+      }
+
+      activeDragRef.current = null;
+      const endedInsideTrack = bounds
+        ? event.clientX >= bounds.left &&
+          event.clientX <= bounds.right &&
+          event.clientY >= bounds.top &&
+          event.clientY <= bounds.bottom
+        : false;
+      if (event.pointerType !== "mouse" || !endedInsideTrack || cancelled) {
+        restoreReadingWave();
+      }
+    };
+
+    const handlePointerUp = (event: globalThis.PointerEvent) =>
+      finishPointerGesture(event, false);
+    const handlePointerCancel = (event: globalThis.PointerEvent) =>
+      finishPointerGesture(event, true);
+
+    window.addEventListener("pointermove", handlePointerMove, {
+      passive: false,
+    });
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerCancel);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerCancel);
+    };
+  }, [restoreReadingWave, scrollToProgress]);
 
   const handleVerticalPointerMove = useCallback(
     (event: PointerEvent<HTMLElement>) => {
@@ -369,19 +413,15 @@ export function ArticleReadingRail({
           }}
           onPointerMove={(event) => {
             handleVerticalPointerMove(event);
-            handleTrackPointerMove(event, "vertical");
           }}
           onPointerUp={(event) => {
-            handleTrackPointerEnd(event, "release");
             if (event.pointerType !== "mouse") restoreReadingWave();
           }}
-          onPointerCancel={(event) => {
-            handleTrackPointerEnd(event, "cancel");
-            restoreReadingWave();
-          }}
+          onPointerCancel={restoreReadingWave}
           onPointerLeave={(event) => {
-            handleTrackPointerEnd(event, "leave");
-            restoreReadingWave();
+            if (event.pointerType === "mouse" && !activeDragRef.current) {
+              restoreReadingWave();
+            }
           }}
           onFocus={() => {
             const trackHeight =
@@ -430,11 +470,6 @@ export function ArticleReadingRail({
         onPointerDown={(event) =>
           handleTrackPointerDown(event, "horizontal")
         }
-        onPointerMove={(event) =>
-          handleTrackPointerMove(event, "horizontal")
-        }
-        onPointerUp={(event) => handleTrackPointerEnd(event, "release")}
-        onPointerCancel={(event) => handleTrackPointerEnd(event, "cancel")}
       >
         <span className="article-reading-rail__line" aria-hidden="true">
           <span className="article-reading-rail__fill" />

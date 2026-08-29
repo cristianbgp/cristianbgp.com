@@ -106,12 +106,35 @@ export function getPreviewPanelOffset(
   );
 }
 
+export function hasRailDragMoved(
+  startPosition: number,
+  currentPosition: number,
+  threshold: number,
+) {
+  return Math.abs(currentPosition - startPosition) >= Math.max(threshold, 0);
+}
+
+export function getRailDragProgress(
+  startProgress: number,
+  startPosition: number,
+  currentPosition: number,
+  trackLength: number,
+) {
+  if (trackLength <= 0) return clamp(startProgress, 0, 1);
+
+  return clamp(
+    startProgress + (currentPosition - startPosition) / trackLength,
+    0,
+    1,
+  );
+}
+
 export function getRailPointerTransition(
   dragging: boolean,
   phase: "move" | "press" | "release" | "cancel" | "leave",
 ) {
   if (phase === "press") {
-    return { dragging: true, shouldScroll: true };
+    return { dragging: true, shouldScroll: false };
   }
 
   if (phase === "move") {

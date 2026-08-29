@@ -6,11 +6,13 @@ import {
   getNearestProgressIndex,
   getPreviewPanelOffset,
   getProximityStrength,
+  getRailDragProgress,
   getRailDashScale,
   getRailPointerTransition,
   getRailSegmentProgresses,
   getReadingProgress,
   getScrollTopForProgress,
+  hasRailDragMoved,
 } from "./reading-rail";
 
 describe("clamp", () => {
@@ -109,16 +111,29 @@ describe("getPreviewPanelOffset", () => {
 });
 
 describe("rail pointer interaction", () => {
+  test("waits for deliberate movement before treating a gesture as a drag", () => {
+    expect(hasRailDragMoved(300, 305, 6)).toBe(false);
+    expect(hasRailDragMoved(300, 306, 6)).toBe(true);
+  });
+
+  test("maps movement relative to the progress where dragging started", () => {
+    expect(getRailDragProgress(0.1, 300, 320, 448)).toBeCloseTo(
+      0.1446428571,
+    );
+    expect(getRailDragProgress(0.98, 300, 340, 448)).toBe(1);
+    expect(getRailDragProgress(0.02, 300, 260, 448)).toBe(0);
+  });
+
   test("hover movement never requests scrolling", () => {
     const transition = getRailPointerTransition(false, "move");
 
     expect(transition).toEqual({ dragging: false, shouldScroll: false });
   });
 
-  test("press starts scrolling and leave always ends the drag", () => {
+  test("press arms dragging without moving the page", () => {
     expect(getRailPointerTransition(false, "press")).toEqual({
       dragging: true,
-      shouldScroll: true,
+      shouldScroll: false,
     });
     expect(getRailPointerTransition(true, "move")).toEqual({
       dragging: true,
