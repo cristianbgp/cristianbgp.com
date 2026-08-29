@@ -192,7 +192,7 @@ pre {
   inset-block: 0;
   width: 44px;
   cursor: default;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 .article-reading-rail__track--vertical:active {
@@ -386,6 +386,7 @@ pre {
 
   .article-reading-rail__track--vertical {
     width: 72px;
+    pointer-events: auto;
   }
 
   .article-reading-rail[data-desktop-side="left"]

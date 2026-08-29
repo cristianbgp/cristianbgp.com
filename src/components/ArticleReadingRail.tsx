@@ -23,6 +23,7 @@ import {
   getReadingProgress,
   getScrollTopForProgress,
   hasRailDragMoved,
+  isReadingRailInteractive,
 } from "@/lib/reading-rail";
 
 type Heading = {
@@ -205,6 +206,10 @@ export function ArticleReadingRail({
       event: PointerEvent<HTMLDivElement>,
       orientation: ActiveDrag["orientation"],
     ) => {
+      if (!isReadingRailInteractive(window.innerWidth, event.pointerType)) {
+        return;
+      }
+
       if (dragFrameRef.current !== null) {
         window.cancelAnimationFrame(dragFrameRef.current);
         dragFrameRef.current = null;

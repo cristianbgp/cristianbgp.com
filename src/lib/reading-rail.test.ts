@@ -15,6 +15,7 @@ import {
   getReadingProgress,
   getScrollTopForProgress,
   hasRailDragMoved,
+  isReadingRailInteractive,
 } from "./reading-rail";
 
 describe("clamp", () => {
@@ -113,6 +114,13 @@ describe("getPreviewPanelOffset", () => {
 });
 
 describe("rail drag interaction", () => {
+  test("keeps rail interaction desktop-only", () => {
+    expect(isReadingRailInteractive(390, "touch")).toBe(false);
+    expect(isReadingRailInteractive(1_279, "mouse")).toBe(false);
+    expect(isReadingRailInteractive(1_280, "touch")).toBe(false);
+    expect(isReadingRailInteractive(1_280, "mouse")).toBe(true);
+  });
+
   test("ends touch gestures without converting them into absolute jumps", () => {
     expect(getRailGestureEndAction("touch", false, false)).toBe("none");
     expect(getRailGestureEndAction("touch", true, false)).toBe("flush-drag");

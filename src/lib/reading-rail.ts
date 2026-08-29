@@ -159,3 +159,10 @@ export function getRailGestureEndAction(
   if (moved) return "flush-drag" as const;
   return pointerType === "mouse" ? ("tap" as const) : ("none" as const);
 }
+
+export function isReadingRailInteractive(
+  viewportWidth: number,
+  pointerType: string,
+) {
+  return viewportWidth >= 1_280 && pointerType === "mouse";
+}
