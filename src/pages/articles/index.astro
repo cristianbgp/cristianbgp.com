@@ -2,8 +2,8 @@
 import { getCollection } from "astro:content";
 import ArticleListItem from "@/components/ArticleListItem.astro";
 import { ArticleFilters } from "@/components/ArticleFilters";
+import { ArticlesStickyTitle } from "@/components/ArticlesStickyTitle";
 import Layout from "@/layouts/Layout.astro";
-import { CommandKeyTrigger } from "@/components/AppCommand";
 import {
   getArticleFilterOptions,
   getPublishedArticles,
@@ -26,24 +26,27 @@ const formatLanguage = (language: string) =>
   <div
     class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
-    <h1 class="text-balance text-4xl font-bold">Articles</h1>
-    <CommandKeyTrigger client:only />
-    <div class="w-full max-w-2xl mx-auto p-6 space-y-10">
+    <div class="sticky top-0 z-30 w-full bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
+      <ArticlesStickyTitle client:load />
       {
         posts.length > 0 && (
-          <ArticleFilters
-            client:load
-            languages={languages.map((language) => ({
-              value: language,
-              label: formatLanguage(language),
-            }))}
-            tags={tags}
-            total={posts.length}
-            initialVisibleTotal={currentTotal}
-          />
+          <div class="mx-auto w-full max-w-2xl px-6">
+            <ArticleFilters
+              client:load
+              languages={languages.map((language) => ({
+                value: language,
+                label: formatLanguage(language),
+              }))}
+              tags={tags}
+              total={posts.length}
+              initialVisibleTotal={currentTotal}
+            />
+          </div>
         )
       }
+    </div>
 
+    <div class="w-full max-w-2xl mx-auto p-6 space-y-10">
       <p
         class="mt-6 rounded-xl border border-dashed p-6 text-center text-muted-foreground"
         data-no-results

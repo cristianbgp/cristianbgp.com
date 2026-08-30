@@ -182,7 +182,7 @@ export function ArticleFilters({
 
   return (
     <div
-      className="sticky top-0 z-30 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-y bg-background/90 py-1.5 pr-2 backdrop-blur-md supports-[backdrop-filter]:bg-background/75"
+      className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-y bg-transparent py-1.5 pr-2"
       data-article-filters
     >
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
