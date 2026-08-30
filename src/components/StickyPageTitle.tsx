@@ -9,13 +9,19 @@ import {
 } from "motion/react";
 
 import { CommandKeyTrigger } from "@/components/AppCommand";
-import { getArticlesHeaderProgress } from "@/lib/articles";
+import { getStickyPageHeaderProgress } from "@/lib/page-header";
 
-export const ArticlesStickyTitle = memo(function ArticlesStickyTitle() {
+type StickyPageTitleProps = {
+  title: string;
+};
+
+export const StickyPageTitle = memo(function StickyPageTitle({
+  title,
+}: StickyPageTitleProps) {
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const progress = useTransform(scrollY, (scrollTop) =>
-    getArticlesHeaderProgress(scrollTop, Boolean(reduceMotion)),
+    getStickyPageHeaderProgress(scrollTop, Boolean(reduceMotion)),
   );
   const titleScale = useTransform(progress, [0, 1], [1, 0.72]);
   const titleY = useTransform(progress, [0, 1], [0, 14]);
@@ -31,13 +37,13 @@ export const ArticlesStickyTitle = memo(function ArticlesStickyTitle() {
   return (
     <header
       className="relative mx-auto flex h-20 w-full max-w-2xl justify-center px-6 pt-1"
-      data-articles-sticky-title
+      data-sticky-page-title
     >
       <motion.h1
         className="origin-center text-balance text-4xl font-bold leading-tight text-foreground will-change-transform"
         style={{ scale: titleScale, y: titleY }}
       >
-        Articles
+        {title}
       </motion.h1>
       <motion.div
         className="absolute bottom-0 left-1/2 -translate-x-1/2"

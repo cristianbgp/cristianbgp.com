@@ -3,24 +3,10 @@ import { describe, expect, test } from "bun:test";
 import {
   countActiveArticleFilters,
   getArticleFilterOptions,
-  getArticlesHeaderProgress,
   getPublishedArticles,
   groupArticles,
   matchesArticleFilters,
 } from "./articles";
-
-describe("getArticlesHeaderProgress", () => {
-  test("collapses the heading across the opening scroll range", () => {
-    expect(getArticlesHeaderProgress(-20, false)).toBe(0);
-    expect(getArticlesHeaderProgress(60, false)).toBe(0.5);
-    expect(getArticlesHeaderProgress(120, false)).toBe(1);
-    expect(getArticlesHeaderProgress(300, false)).toBe(1);
-  });
-
-  test("uses the compact state when reduced motion is requested", () => {
-    expect(getArticlesHeaderProgress(0, true)).toBe(1);
-  });
-});
 
 describe("countActiveArticleFilters", () => {
   test("counts every selected filter value", () => {

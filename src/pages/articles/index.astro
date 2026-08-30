@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import ArticleListItem from "@/components/ArticleListItem.astro";
 import { ArticleFilters } from "@/components/ArticleFilters";
-import { ArticlesStickyTitle } from "@/components/ArticlesStickyTitle";
+import PageHeader from "@/components/PageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
   getArticleFilterOptions,
@@ -26,8 +26,7 @@ const formatLanguage = (language: string) =>
   <div
     class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
-    <div class="sticky top-0 z-30 w-full bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
-      <ArticlesStickyTitle client:load />
+    <PageHeader title="Articles">
       {
         posts.length > 0 && (
           <div class="mx-auto w-full max-w-2xl px-6">
@@ -44,7 +43,7 @@ const formatLanguage = (language: string) =>
           </div>
         )
       }
-    </div>
+    </PageHeader>
 
     <div class="w-full max-w-2xl mx-auto p-6 space-y-10">
       <p

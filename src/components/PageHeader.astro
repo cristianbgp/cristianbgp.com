@@ -1,0 +1,17 @@
+---
+import { StickyPageTitle } from "@/components/StickyPageTitle";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<div
+  class="sticky top-0 z-30 w-full bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75"
+  data-page-header
+>
+  <StickyPageTitle client:load title={title} />
+  <slot />
+</div>

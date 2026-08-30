@@ -4,14 +4,6 @@ type PublishableArticle = {
   };
 };
 
-export function getArticlesHeaderProgress(
-  scrollTop: number,
-  reduceMotion: boolean,
-) {
-  if (reduceMotion) return 1;
-  return Math.min(Math.max(scrollTop / 120, 0), 1);
-}
-
 export function getPublishedArticles<T extends PublishableArticle>(
   articles: T[],
 ): T[] {
