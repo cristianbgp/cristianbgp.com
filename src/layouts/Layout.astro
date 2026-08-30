@@ -41,11 +41,19 @@ const articles = getPublishedArticles(articleEntries).map(
     id,
     title: data.title,
     archived: data.archived ?? false,
+    description: data.description,
+    lang: data.lang,
+    tags: data.tags,
   }),
 );
 const tools = toolEntries
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .map(({ id, data }) => ({ id, title: data.title, url: data.url }));
+  .map(({ id, data }) => ({
+    id,
+    title: data.title,
+    url: data.url,
+    description: data.description,
+  }));
 ---
 
 <html lang={lang}>

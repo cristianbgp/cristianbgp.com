@@ -5,6 +5,7 @@ import { ArticleFilters } from "@/components/ArticleFilters";
 import PageHeader from "@/components/PageHeader.astro";
 import Layout from "@/layouts/Layout.astro";
 import {
+  ARTICLE_FILTER_QUERY_KEYS,
   getArticleFilterOptions,
   getPublishedArticles,
 } from "@/lib/articles";
@@ -23,13 +24,30 @@ const formatLanguage = (language: string) =>
   title="Articles"
   description="Articles about software development, product building, and game design."
 >
+  <script
+    is:inline
+    define:vars={{
+      articleFilterKeys: ARTICLE_FILTER_QUERY_KEYS,
+      hasArticles: posts.length > 0,
+    }}
+  >
+    if (hasArticles) {
+      const params = new URLSearchParams(window.location.search);
+      if (articleFilterKeys.some((key) => params.has(key))) {
+        document.documentElement.dataset.articleFiltersPending = "";
+      }
+    }
+  </script>
   <div
     class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
     <PageHeader title="Articles">
       {
         posts.length > 0 && (
-          <div class="mx-auto w-full max-w-2xl px-6">
+          <div
+            class="mx-auto w-full max-w-2xl px-6"
+            data-article-filter-surface
+          >
             <ArticleFilters
               client:load
               languages={languages.map((language) => ({
@@ -45,7 +63,10 @@ const formatLanguage = (language: string) =>
       }
     </PageHeader>
 
-    <div class="w-full max-w-2xl mx-auto p-6 space-y-10">
+    <div
+      class="w-full max-w-2xl mx-auto p-6 space-y-10"
+      data-article-filter-surface
+    >
       <p
         class="mt-6 rounded-xl border border-dashed p-6 text-center text-muted-foreground"
         data-no-results

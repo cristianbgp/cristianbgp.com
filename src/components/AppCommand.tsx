@@ -9,7 +9,6 @@ import {
   Home,
   Moon,
   NotebookTextIcon,
-  Settings,
   SparklesIcon,
   SquareDashedMousePointerIcon,
   Sun,
@@ -25,7 +24,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn, isApple, isMobile } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import {
@@ -35,18 +34,23 @@ import {
 } from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
 import { Button } from "@/components/ui/button";
-import { isExternalUrl, normalizePathname } from "@/lib/navigation";
+import { getCommandPaletteData } from "@/lib/command-palette";
+import { isExternalUrl } from "@/lib/navigation";
 
 type CommandArticle = {
   id: string;
   title: string;
   archived: boolean;
+  description: string;
+  lang: string;
+  tags: string[];
 };
 
 type CommandTool = {
   id: string;
   title: string;
   url: string;
+  description: string;
 };
 
 const toolIcons: Record<string, typeof BoxIcon> = {
@@ -58,6 +62,30 @@ const toolIcons: Record<string, typeof BoxIcon> = {
   "pixel-art-poster": SquareDashedMousePointerIcon,
   microinteractions: SparklesIcon,
 };
+
+const pageIcons: Record<string, typeof BoxIcon> = {
+  home: Home,
+  articles: BookOpenIcon,
+  tools: BoxIcon,
+  resume: User,
+};
+
+function CommandItemLabel({
+  description,
+  title,
+}: {
+  description: string;
+  title: string;
+}) {
+  return (
+    <span className="flex min-w-0 flex-col">
+      <span className="truncate">{title}</span>
+      <span className="truncate text-xs text-muted-foreground">
+        {description}
+      </span>
+    </span>
+  );
+}
 
 function getCommandKey() {
   return isApple() ? "⌘" : "^";
@@ -105,9 +133,12 @@ export function AppCommand({
   currentPath: string;
 }) {
   const isCommandOpen = useStore($isCommandOpen);
-  const normalizedCurrentPath = normalizePathname(currentPath);
   const [search, setSearch] = useState("");
   const { theme, setTheme } = useTheme();
+  const commandData = useMemo(
+    () => getCommandPaletteData({ articles, currentPath, tools }),
+    [articles, currentPath, tools],
+  );
   const navigate = (path: string) => {
     window.location.href = path;
   };
@@ -160,21 +191,32 @@ export function AppCommand({
       />
       <CommandList className="max-h-80">
         <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup>
-          <CommandItem onSelect={() => onSelect(toggleTheme)}>
-            <Sun className="hidden dark:block" />
-            <Moon className="block dark:hidden" />
-            <span>Toggle theme</span>
-            <CommandShortcut>{getCommandKey()}I</CommandShortcut>
-          </CommandItem>
+        <CommandGroup heading="Pages">
+          {commandData.pages.map((page) => {
+            const PageIcon = pageIcons[page.id] ?? BoxIcon;
+            return (
+              <CommandItem
+                key={page.id}
+                keywords={[...page.keywords]}
+                onSelect={() => onSelect(() => navigate(page.path))}
+              >
+                <PageIcon />
+                <CommandItemLabel
+                  description={page.description}
+                  title={page.title}
+                />
+              </CommandItem>
+            );
+          })}
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Tools">
-          {tools.map((tool) => {
+          {commandData.tools.map((tool) => {
             const ToolIcon = toolIcons[tool.id] ?? BoxIcon;
             return (
               <CommandItem
                 key={tool.id}
+                keywords={tool.keywords}
                 onSelect={() =>
                   onSelect(() => {
                     if (isExternalUrl(tool.url)) {
@@ -186,60 +228,60 @@ export function AppCommand({
                 }
               >
                 <ToolIcon />
-                <span>{tool.title}</span>
+                <CommandItemLabel
+                  description={tool.description}
+                  title={tool.title}
+                />
               </CommandItem>
             );
           })}
         </CommandGroup>
-        <CommandSeparator />
-        <CommandGroup heading="Personal">
-          {normalizedCurrentPath !== "/" && (
-            <CommandItem onSelect={() => onSelect(() => navigate("/"))}>
-              <Home />
-              <span>Home</span>
-            </CommandItem>
-          )}
-          {normalizedCurrentPath !== "/articles" && (
-            <CommandItem onSelect={() => onSelect(() => navigate("/articles"))}>
-              <BookOpenIcon />
-              <span>Articles</span>
-            </CommandItem>
-          )}
-          {normalizedCurrentPath !== "/tools" && (
-            <CommandItem onSelect={() => onSelect(() => navigate("/tools"))}>
-              <BoxIcon />
-              <span>Tools</span>
-            </CommandItem>
-          )}
-          {normalizedCurrentPath !== "/resume" && (
-            <CommandItem onSelect={() => onSelect(() => navigate("/resume"))}>
-              <User />
-              <span>Resume</span>
-            </CommandItem>
-          )}
-          <CommandItem disabled>
-            <Settings />
-            <span>Settings</span>
-            <CommandShortcut>{getCommandKey()}S</CommandShortcut>
-          </CommandItem>
-        </CommandGroup>
-        {search.length > 0 && articles.length > 0 && (
-          <CommandGroup>
-            {articles.map((article) => (
+        {search.trim().length > 0 && commandData.articles.length > 0 ? (
+          <>
+            <CommandSeparator />
+            <CommandGroup heading="Articles">
+            {commandData.articles.map((article) => (
               <CommandItem
                 key={article.id}
+                keywords={article.keywords}
                 onSelect={() =>
-                  onSelect(() => navigate(`/articles/${article.id}`))
+                  onSelect(() => navigate(article.path))
                 }
               >
                 <BookTextIcon />
-                <span className={cn(article.archived && "line-through")}>
-                  {article.title}
+                <span className="flex min-w-0 flex-col">
+                  <span
+                    className={cn(
+                      "truncate",
+                      article.archived && "line-through",
+                    )}
+                  >
+                    {article.title}
+                  </span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {article.description}
+                  </span>
                 </span>
               </CommandItem>
             ))}
-          </CommandGroup>
-        )}
+            </CommandGroup>
+          </>
+        ) : null}
+        <CommandSeparator />
+        <CommandGroup heading="Appearance">
+          <CommandItem
+            keywords={["appearance", "dark", "light", "theme"]}
+            onSelect={() => onSelect(toggleTheme)}
+          >
+            <Sun className="hidden dark:block" />
+            <Moon className="block dark:hidden" />
+            <CommandItemLabel
+              description="Switch between light and dark"
+              title="Toggle theme"
+            />
+            <CommandShortcut>{getCommandKey()}I</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
       </CommandList>
     </CommandDialog>
   );

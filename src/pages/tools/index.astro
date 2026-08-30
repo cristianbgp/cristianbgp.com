@@ -1,13 +1,21 @@
 ---
 import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
-import { CommandKeyTrigger } from "@/components/AppCommand";
-import { Card } from "@/components/ui/card";
+import PageHeader from "@/components/PageHeader.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
+import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
 import { isExternalUrl } from "@/lib/navigation";
 
 const tools = (await getCollection("tools")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
 );
+const internalTools = tools.filter((tool) => !isExternalUrl(tool.data.url));
+const externalTools = tools.filter((tool) => isExternalUrl(tool.data.url));
+
+const groups = [
+  { title: "On this site", tools: internalTools },
+  { title: "Elsewhere", tools: externalTools },
+].filter((group) => group.tools.length > 0);
 ---
 
 <Layout
@@ -15,39 +23,68 @@ const tools = (await getCollection("tools")).sort(
   description="Web tools and experiments built by Cristian Granda."
 >
   <div
-    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+    class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
-    <h1 class="text-balance text-4xl font-bold">Tools</h1>
-    <CommandKeyTrigger client:only />
-    <div class="max-w-2xl mx-auto p-6 space-y-10">
-      <section>
-        {
-          tools.length === 0 && (
-            <p class="text-center text-2xl font-bold">Soon…</p>
-          )
-        }
-        <div class="flex flex-col gap-4">
-          {
-            tools.map((tool) => {
-              const isExternal = isExternalUrl(tool.data.url);
-              return (
-                <a
-                  href={tool.data.url}
-                  target={isExternal ? "_blank" : undefined}
-                  rel={isExternal ? "noopener noreferrer" : undefined}
+    <PageHeader title="Tools" />
+    <div class="mx-auto w-full max-w-2xl space-y-12 px-6 pb-16 pt-10">
+      {
+        tools.length === 0 ? (
+          <p class="text-center text-2xl font-bold">Soon…</p>
+        ) : (
+          groups.map((group) => (
+            <section aria-labelledby={`tools-${group.title.toLowerCase().replaceAll(" ", "-")}`}>
+              <div class="mb-3 flex items-baseline justify-between gap-4">
+                <h2
+                  id={`tools-${group.title.toLowerCase().replaceAll(" ", "-")}`}
+                  class="text-sm font-medium text-muted-foreground"
                 >
-                  <Card className="p-4">
-                    <h2 class="title text-2xl font-bold">{tool.data.title}</h2>
-                    <p class="text-sm text-muted-foreground">
-                      {tool.data.description}
-                    </p>
-                  </Card>
-                </a>
-              );
-            })
-          }
-        </div>
-      </section>
+                  {group.title}
+                </h2>
+                <span class="text-xs tabular-nums text-muted-foreground">
+                  {group.tools.length}
+                </span>
+              </div>
+              <ul class="rounded-xl border bg-background/25 px-4 sm:px-5">
+                {group.tools.map((tool) => {
+                  const isExternal = isExternalUrl(tool.data.url);
+                  const DirectionIcon = isExternal
+                    ? ArrowUpRightIcon
+                    : ArrowRightIcon;
+
+                  return (
+                    <li class="border-b last:border-b-0">
+                      <a
+                        href={tool.data.url}
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                        class="group grid min-h-28 grid-cols-[1fr_auto] gap-x-5 gap-y-3 rounded-md py-5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:min-h-24 sm:grid-cols-[1fr_auto]"
+                      >
+                        <div class="min-w-0">
+                          <h3 class="text-xl font-bold tracking-tight transition-transform duration-200 group-hover:translate-x-1 group-focus-visible:translate-x-1">
+                            {tool.data.title}
+                          </h3>
+                          <p class="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                            {tool.data.description}
+                          </p>
+                        </div>
+                        <DirectionIcon
+                          aria-hidden="true"
+                          className="mt-1 size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 group-focus-visible:text-foreground"
+                          strokeWidth={1.75}
+                        />
+                        <div class="col-span-2 flex items-center justify-between gap-4 text-xs text-muted-foreground sm:col-span-1">
+                          <span>{isExternal ? "External project" : "Interactive tool"}</span>
+                          <FormattedDate date={tool.data.date} locale="en" />
+                        </div>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))
+        )
+      }
     </div>
   </div>
 </Layout>

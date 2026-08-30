@@ -133,6 +133,10 @@
   }
 }
 
+html[data-article-filters-pending] [data-article-filter-surface] {
+  visibility: hidden;
+}
+
 @utility rendering-pixelated {
   image-rendering: pixelated;
 }
@@ -143,6 +147,49 @@
 
 @utility rendering-auto {
   image-rendering: auto;
+}
+
+@media print {
+  @page {
+    margin: 0.55in;
+  }
+
+  html,
+  body {
+    color-scheme: light;
+    background: white !important;
+    color: #18181b !important;
+  }
+
+  main,
+  [data-resume-page] {
+    min-height: auto !important;
+    background: none !important;
+  }
+
+  [data-resume-page] {
+    padding: 0 !important;
+  }
+
+  [data-resume-page] > [data-page-header],
+  [data-resume-print],
+  astro-dev-toolbar {
+    display: none !important;
+  }
+
+  [data-resume-content] {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  [data-resume-content] section,
+  [data-resume-content] a {
+    color: inherit !important;
+  }
+
+  [data-resume-content] section {
+    break-inside: avoid;
+  }
 }
 
 pre {

@@ -176,3 +176,97 @@ describe("matchesArticleFilters", () => {
     ).toBe(true);
   });
 });
+
+describe("article filter URLs", () => {
+  const options = {
+    languages: ["en", "es"],
+    tags: ["astro", "react", "typescript"],
+  };
+
+  test("uses Current when the URL has no article filters", async () => {
+    const articles = await import("./articles");
+    const parseArticleFilterSearch = (
+      articles as Record<string, unknown>
+    ).parseArticleFilterSearch as
+      | ((search: string, filterOptions: typeof options) => unknown)
+      | undefined;
+
+    expect(parseArticleFilterSearch?.("", options)).toEqual({
+      languages: [],
+      statuses: ["current"],
+      tags: [],
+    });
+  });
+
+  test("detects when the initial page needs URL filter hydration", async () => {
+    const articles = await import("./articles");
+    const hasArticleFilterSearch = (
+      articles as Record<string, unknown>
+    ).hasArticleFilterSearch as ((search: string) => boolean) | undefined;
+
+    expect(hasArticleFilterSearch?.("?ref=home")).toBe(false);
+    expect(hasArticleFilterSearch?.("?ref=home&status=archived")).toBe(true);
+    expect(hasArticleFilterSearch?.("?lang=es&tag=react")).toBe(true);
+  });
+
+  test("restores repeated language, status, and tag selections", async () => {
+    const articles = await import("./articles");
+    const parseArticleFilterSearch = (
+      articles as Record<string, unknown>
+    ).parseArticleFilterSearch as
+      | ((search: string, filterOptions: typeof options) => unknown)
+      | undefined;
+
+    expect(
+      parseArticleFilterSearch?.(
+        "?status=current&status=archived&lang=es&lang=en&tag=react&tag=astro",
+        options,
+      ),
+    ).toEqual({
+      languages: ["es", "en"],
+      statuses: ["current", "archived"],
+      tags: ["react", "astro"],
+    });
+  });
+
+  test("keeps a cleared status explicit while preserving unrelated parameters", async () => {
+    const articles = await import("./articles");
+    const serializeArticleFilterSearch = (
+      articles as Record<string, unknown>
+    ).serializeArticleFilterSearch as
+      | ((filters: {
+          languages: string[];
+          statuses: string[];
+          tags: string[];
+        }, search?: string) => string)
+      | undefined;
+
+    expect(
+      serializeArticleFilterSearch?.(
+        { languages: [], statuses: [], tags: [] },
+        "?ref=home&status=current&tag=astro",
+      ),
+    ).toBe("?ref=home&status=all");
+  });
+
+  test("omits the default Current status from a shareable URL", async () => {
+    const articles = await import("./articles");
+    const serializeArticleFilterSearch = (
+      articles as Record<string, unknown>
+    ).serializeArticleFilterSearch as
+      | ((filters: {
+          languages: string[];
+          statuses: string[];
+          tags: string[];
+        }) => string)
+      | undefined;
+
+    expect(
+      serializeArticleFilterSearch?.({
+        languages: ["es"],
+        statuses: ["current"],
+        tags: ["react"],
+      }),
+    ).toBe("?lang=es&tag=react");
+  });
+});

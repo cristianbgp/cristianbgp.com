@@ -22,11 +22,74 @@ type FilterableArticle = {
   tags: string[];
 };
 
-type ArticleFilters = {
+export type ArticleStatus = "current" | "archived";
+
+export type ArticleFilters = {
   languages: string[];
-  statuses: ("current" | "archived")[];
+  statuses: ArticleStatus[];
   tags: string[];
 };
+
+export const INITIAL_ARTICLE_FILTERS: ArticleFilters = {
+  languages: [],
+  statuses: ["current"],
+  tags: [],
+};
+
+export const ARTICLE_FILTER_QUERY_KEYS = ["lang", "status", "tag"] as const;
+
+export function hasArticleFilterSearch(search: string): boolean {
+  const params = new URLSearchParams(search);
+  return ARTICLE_FILTER_QUERY_KEYS.some((key) => params.has(key));
+}
+
+function uniqueKnownValues(values: string[], availableValues: string[]) {
+  const available = new Set(availableValues);
+  return [...new Set(values.filter((value) => available.has(value)))];
+}
+
+export function parseArticleFilterSearch(
+  search: string,
+  options: { languages: string[]; tags: string[] },
+): ArticleFilters {
+  const params = new URLSearchParams(search);
+  const statusValues = params.getAll("status");
+  const statuses = statusValues.includes("all")
+    ? []
+    : uniqueKnownValues(statusValues, ["current", "archived"]);
+
+  return {
+    languages: uniqueKnownValues(params.getAll("lang"), options.languages),
+    statuses:
+      statusValues.length === 0 || statuses.length === 0 && !statusValues.includes("all")
+        ? [...INITIAL_ARTICLE_FILTERS.statuses]
+        : (statuses as ArticleStatus[]),
+    tags: uniqueKnownValues(params.getAll("tag"), options.tags),
+  };
+}
+
+export function serializeArticleFilterSearch(
+  filters: ArticleFilters,
+  search = "",
+): string {
+  const params = new URLSearchParams(search);
+  ARTICLE_FILTER_QUERY_KEYS.forEach((key) => params.delete(key));
+
+  if (filters.statuses.length === 0) {
+    params.append("status", "all");
+  } else if (
+    filters.statuses.length !== 1 ||
+    filters.statuses[0] !== "current"
+  ) {
+    filters.statuses.forEach((status) => params.append("status", status));
+  }
+
+  filters.languages.forEach((language) => params.append("lang", language));
+  filters.tags.forEach((tag) => params.append("tag", tag));
+
+  const serialized = params.toString();
+  return serialized ? `?${serialized}` : "";
+}
 
 export function countActiveArticleFilters(filters: ArticleFilters) {
   return filters.languages.length + filters.statuses.length + filters.tags.length;

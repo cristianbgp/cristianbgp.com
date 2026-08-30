@@ -5,7 +5,7 @@ import {
   SearchIcon,
   XIcon,
 } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,25 +14,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  INITIAL_ARTICLE_FILTERS,
   countActiveArticleFilters,
   matchesArticleFilters,
+  parseArticleFilterSearch,
+  serializeArticleFilterSearch,
+  type ArticleFilters as Filters,
+  type ArticleStatus,
 } from "@/lib/articles";
 import { cn } from "@/lib/utils";
 
 type FilterOption = { label: string; value: string };
-type ArticleStatus = "current" | "archived";
-type Filters = {
-  languages: string[];
-  statuses: ArticleStatus[];
-  tags: string[];
-};
 
 const EMPTY_FILTERS: Filters = { languages: [], statuses: [], tags: [] };
-const INITIAL_FILTERS: Filters = {
-  languages: [],
-  statuses: ["current"],
-  tags: [],
-};
 const TAG_SEARCH_THRESHOLD = 8;
 const STATUS_OPTIONS = [
   { label: "Current", value: "current" },
@@ -110,15 +104,24 @@ export function ArticleFilters({
   total: number;
   initialVisibleTotal: number;
 }) {
-  const [filters, setFilters] = useState<Filters>(INITIAL_FILTERS);
+  const [filters, setFilters] = useState<Filters>(INITIAL_ARTICLE_FILTERS);
   const [query, setQuery] = useState("");
   const [visibleTotal, setVisibleTotal] = useState(initialVisibleTotal);
+  const [urlHydrated, setUrlHydrated] = useState(false);
+  const shouldPushHistory = useRef(false);
   const statusHeadingId = useId();
   const languageHeadingId = useId();
   const tagsHeadingId = useId();
   const activeFilterCount = countActiveArticleFilters(filters);
   const selectedLanguages = languages.filter((language) =>
     filters.languages.includes(language.value),
+  );
+  const filterOptions = useMemo(
+    () => ({
+      languages: languages.map((language) => language.value),
+      tags,
+    }),
+    [languages, tags],
   );
   const visibleTags = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -128,6 +131,37 @@ export function ArticleFilters({
       tag.toLocaleLowerCase().includes(normalizedQuery),
     );
   }, [query, tags]);
+
+  useEffect(() => {
+    const restoreFiltersFromUrl = () => {
+      shouldPushHistory.current = false;
+      setFilters(
+        parseArticleFilterSearch(window.location.search, filterOptions),
+      );
+      setUrlHydrated(true);
+    };
+
+    restoreFiltersFromUrl();
+    window.addEventListener("popstate", restoreFiltersFromUrl);
+    return () => window.removeEventListener("popstate", restoreFiltersFromUrl);
+  }, [filterOptions]);
+
+  useEffect(() => {
+    if (!urlHydrated) return;
+    delete document.documentElement.dataset.articleFiltersPending;
+  }, [urlHydrated]);
+
+  useEffect(() => {
+    if (!shouldPushHistory.current) return;
+
+    const search = serializeArticleFilterSearch(
+      filters,
+      window.location.search,
+    );
+    const nextUrl = `${window.location.pathname}${search}${window.location.hash}`;
+    window.history.pushState(null, "", nextUrl);
+    shouldPushHistory.current = false;
+  }, [filters]);
 
   useEffect(() => {
     const items = [
@@ -154,27 +188,32 @@ export function ArticleFilters({
     setVisibleTotal(nextVisibleTotal);
   }, [activeFilterCount, filters]);
 
+  const updateFilters = (update: (current: Filters) => Filters) => {
+    shouldPushHistory.current = true;
+    setFilters(update);
+  };
+
   const clearFilters = () => {
-    setFilters(EMPTY_FILTERS);
+    updateFilters(() => EMPTY_FILTERS);
     setQuery("");
   };
 
   const toggleLanguage = (language: string) => {
-    setFilters((current) => ({
+    updateFilters((current) => ({
       ...current,
       languages: toggleSelection(current.languages, language),
     }));
   };
 
   const toggleStatus = (status: ArticleStatus) => {
-    setFilters((current) => ({
+    updateFilters((current) => ({
       ...current,
       statuses: toggleSelection(current.statuses, status),
     }));
   };
 
   const toggleTag = (tag: string) => {
-    setFilters((current) => ({
+    updateFilters((current) => ({
       ...current,
       tags: toggleSelection(current.tags, tag),
     }));
