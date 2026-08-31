@@ -1,40 +1,29 @@
-import { beforeAll, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 
-const toolPages = [
-  {
-    path: "dist/tools/json-tree-viewer/index.html",
-    title: "JSON Tree Viewer",
-  },
-  {
-    path: "dist/tools/pixel-art-poster/index.html",
-    title: "Pixel Art Poster",
-  },
-];
+import { getInternalToolPageIssues } from "./internal-tool-pages";
 
-beforeAll(async () => {
-  const build = Bun.spawn(["bun", "run", "build"], {
-    cwd: process.cwd(),
-    stderr: "pipe",
-    stdout: "ignore",
+describe("getInternalToolPageIssues", () => {
+  test("accepts a page with the standard header and one matching title", () => {
+    const html =
+      '<main><div data-page-header><h1>JSON Tree Viewer</h1></div></main>';
+
+    expect(getInternalToolPageIssues(html, "JSON Tree Viewer")).toEqual([]);
   });
-  const exitCode = await build.exited;
 
-  if (exitCode !== 0) {
-    const stderr = await new Response(build.stderr).text();
-    throw new Error(`Astro build failed:\n${stderr}`);
-  }
-}, 15_000);
+  test("reports a page without the standard header", () => {
+    const html = "<main><h1>JSON Tree Viewer</h1></main>";
 
-describe("internal tool page headers", () => {
-  test.each(toolPages)("renders $title with the standard page header", async ({
-    path,
-    title,
-  }) => {
-    const html = await Bun.file(path).text();
+    expect(getInternalToolPageIssues(html, "JSON Tree Viewer")).toContain(
+      "missing the standard page header",
+    );
+  });
 
-    expect(html).toContain("data-page-header");
-    expect(html).toContain("<h1");
-    expect(html).toContain(title);
-    expect(html.match(/<h1/g)).toHaveLength(1);
+  test("reports duplicate primary headings", () => {
+    const html =
+      "<main data-page-header><h1>Pixel Art Poster</h1><h1>Duplicate</h1></main>";
+
+    expect(getInternalToolPageIssues(html, "Pixel Art Poster")).toContain(
+      "expected one h1 but found 2",
+    );
   });
 });

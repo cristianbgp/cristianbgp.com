@@ -34,3 +34,6 @@ jobs:
 
       - name: Build production site
         run: bun run build
+
+      - name: Verify internal tool pages
+        run: bun run verify:internal-tools
