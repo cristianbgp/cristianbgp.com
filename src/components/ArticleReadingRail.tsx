@@ -14,12 +14,10 @@ import {
   getActiveHeadingIndex,
   getNearestProgressIndex,
   getPreviewPanelOffset,
-  getRailGestureEndAction,
-  getRailDragProgress,
   getRailDashScale,
   getRailDragScrollTop,
+  getRailPointerProgress,
   getRailSegmentProgresses,
-  getRailViewportOffset,
   getReadingProgress,
   getScrollTopForProgress,
   hasRailDragMoved,
@@ -58,9 +56,7 @@ type ActiveDrag = {
   pointerId: number;
   startPosition: number;
   startProgress: number;
-  startScrollTop: number;
   trackLength: number;
-  useControlledGain: boolean;
 };
 
 const EMPTY_METRICS: ReadingMetrics = {
@@ -73,7 +69,6 @@ const EMPTY_METRICS: ReadingMetrics = {
 const HEADING_SELECTOR =
   "[data-article-body] h2[id], [data-article-body] h3[id]";
 const RAIL_SEGMENTS = getRailSegmentProgresses(56);
-const MOBILE_DRAG_GAIN = 5;
 const DRAG_THRESHOLD = 6;
 
 export function ArticleReadingRail({
@@ -91,8 +86,6 @@ export function ArticleReadingRail({
   const progressPercentRef = useRef(0);
   const activeIndexRef = useRef(-1);
   const activeDragRef = useRef<ActiveDrag | null>(null);
-  const pendingDragPositionRef = useRef<number | null>(null);
-  const dragFrameRef = useRef<number | null>(null);
   const hoveringRef = useRef(false);
   const [headings, setHeadings] = useState<Heading[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -130,55 +123,6 @@ export function ArticleReadingRail({
     });
   }, []);
 
-  const applyDragPosition = useCallback(
-    (drag: ActiveDrag, currentPosition: number) => {
-      const offset = getRailViewportOffset(
-        drag.startPosition,
-        currentPosition,
-      );
-      const { start, end } = metricsRef.current;
-      const nextScrollTop = drag.useControlledGain
-        ? getRailDragScrollTop(
-            drag.startScrollTop,
-            offset,
-            MOBILE_DRAG_GAIN,
-            start,
-            end,
-          )
-        : getScrollTopForProgress(
-            getRailDragProgress(
-              drag.startProgress,
-              0,
-              offset,
-              drag.trackLength,
-            ),
-            start,
-            end,
-          );
-
-      window.scrollTo({ top: nextScrollTop, behavior: "auto" });
-    },
-    [],
-  );
-
-  const scheduleDragPosition = useCallback(
-    (currentPosition: number) => {
-      pendingDragPositionRef.current = currentPosition;
-      if (dragFrameRef.current !== null) return;
-
-      dragFrameRef.current = window.requestAnimationFrame(() => {
-        dragFrameRef.current = null;
-        const drag = activeDragRef.current;
-        const pendingPosition = pendingDragPositionRef.current;
-        pendingDragPositionRef.current = null;
-        if (!drag || pendingPosition === null) return;
-
-        applyDragPosition(drag, pendingPosition);
-      });
-    },
-    [applyDragPosition],
-  );
-
   const handleTrackTap = useCallback(
     (
       point: { x: number; y: number },
@@ -191,12 +135,13 @@ export function ArticleReadingRail({
       const bounds = track?.getBoundingClientRect();
       if (!bounds) return;
 
-      const position =
-        orientation === "vertical"
-          ? point.y - bounds.top
-          : point.x - bounds.left;
+      const pointerPosition =
+        orientation === "vertical" ? point.y : point.x;
+      const trackStart = orientation === "vertical" ? bounds.top : bounds.left;
       const length = orientation === "vertical" ? bounds.height : bounds.width;
-      scrollToProgress(length > 0 ? clamp(position / length, 0, 1) : 0);
+      scrollToProgress(
+        getRailPointerProgress(pointerPosition, trackStart, length),
+      );
     },
     [scrollToProgress],
   );
@@ -210,25 +155,23 @@ export function ArticleReadingRail({
         return;
       }
 
-      if (dragFrameRef.current !== null) {
-        window.cancelAnimationFrame(dragFrameRef.current);
-        dragFrameRef.current = null;
-      }
-      pendingDragPositionRef.current = null;
-
       const bounds = event.currentTarget.getBoundingClientRect();
+      const startPosition =
+        orientation === "vertical" ? event.clientY : event.clientX;
+      const trackStart = orientation === "vertical" ? bounds.top : bounds.left;
+      const trackLength =
+        orientation === "vertical" ? bounds.height : bounds.width;
       activeDragRef.current = {
         moved: false,
         orientation,
         pointerId: event.pointerId,
-        startPosition:
-          orientation === "vertical" ? event.clientY : event.clientX,
-        startProgress: progressRef.current,
-        startScrollTop: window.scrollY,
-        trackLength:
-          orientation === "vertical" ? bounds.height : bounds.width,
-        useControlledGain:
-          window.innerWidth < 1280 || event.pointerType !== "mouse",
+        startPosition,
+        startProgress: getRailPointerProgress(
+          startPosition,
+          trackStart,
+          trackLength,
+        ),
+        trackLength,
       };
       event.preventDefault();
     },
@@ -240,14 +183,6 @@ export function ArticleReadingRail({
       event: globalThis.PointerEvent,
       orientation: ActiveDrag["orientation"],
     ) => (orientation === "vertical" ? event.clientY : event.clientX);
-
-    const cancelScheduledDrag = () => {
-      if (dragFrameRef.current !== null) {
-        window.cancelAnimationFrame(dragFrameRef.current);
-        dragFrameRef.current = null;
-      }
-      pendingDragPositionRef.current = null;
-    };
 
     const handlePointerMove = (event: globalThis.PointerEvent) => {
       const drag = activeDragRef.current;
@@ -264,7 +199,18 @@ export function ArticleReadingRail({
       }
       if (!drag.moved) return;
 
-      scheduleDragPosition(currentPosition);
+      const { start, end } = metricsRef.current;
+      window.scrollTo({
+        top: getRailDragScrollTop(
+          drag.startProgress,
+          drag.startPosition,
+          currentPosition,
+          drag.trackLength,
+          start,
+          end,
+        ),
+        behavior: "auto",
+      });
     };
 
     const finishPointerGesture = (
@@ -274,17 +220,21 @@ export function ArticleReadingRail({
       const drag = activeDragRef.current;
       if (!drag || event.pointerId !== drag.pointerId) return;
 
-      const action = getRailGestureEndAction(
-        event.pointerType,
-        drag.moved,
-        cancelled,
-      );
-      const pendingPosition = pendingDragPositionRef.current;
-      cancelScheduledDrag();
-
-      if (action === "flush-drag" && pendingPosition !== null) {
-        applyDragPosition(drag, pendingPosition);
-      } else if (action === "tap") {
+      if (!cancelled && drag.moved) {
+        const currentPosition = getEventPosition(event, drag.orientation);
+        const { start, end } = metricsRef.current;
+        window.scrollTo({
+          top: getRailDragScrollTop(
+            drag.startProgress,
+            drag.startPosition,
+            currentPosition,
+            drag.trackLength,
+            start,
+            end,
+          ),
+          behavior: "auto",
+        });
+      } else if (!cancelled) {
         handleTrackTap(
           { x: event.clientX, y: event.clientY },
           drag.orientation,
@@ -321,17 +271,11 @@ export function ArticleReadingRail({
     window.addEventListener("pointercancel", handlePointerCancel);
 
     return () => {
-      cancelScheduledDrag();
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerCancel);
     };
-  }, [
-    applyDragPosition,
-    handleTrackTap,
-    restoreReadingWave,
-    scheduleDragPosition,
-  ]);
+  }, [handleTrackTap, restoreReadingWave]);
 
   const handleVerticalPointerMove = useCallback(
     (event: PointerEvent<HTMLElement>) => {
@@ -521,7 +465,7 @@ export function ArticleReadingRail({
             handleTrackPointerDown(event, "vertical");
           }}
           onPointerMove={(event) => {
-            if (event.pointerType === "mouse" && !activeDragRef.current) {
+            if (event.pointerType === "mouse") {
               handleVerticalPointerMove(event);
             }
           }}

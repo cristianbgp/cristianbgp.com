@@ -121,25 +121,34 @@ export function getRailDragProgress(
   );
 }
 
-export function getRailDragScrollTop(
-  startScrollTop: number,
-  offset: number,
-  gain: number,
-  minimum: number,
-  maximum: number,
+export function getRailPointerProgress(
+  pointerPosition: number,
+  trackStart: number,
+  trackLength: number,
 ) {
-  return clamp(
-    startScrollTop + offset * Math.max(gain, 0),
-    minimum,
-    maximum,
-  );
+  if (trackLength <= 0) return 0;
+
+  return clamp((pointerPosition - trackStart) / trackLength, 0, 1);
 }
 
-export function getRailViewportOffset(
+export function getRailDragScrollTop(
+  startProgress: number,
   startPosition: number,
   currentPosition: number,
+  trackLength: number,
+  start: number,
+  end: number,
 ) {
-  return currentPosition - startPosition;
+  return getScrollTopForProgress(
+    getRailDragProgress(
+      startProgress,
+      startPosition,
+      currentPosition,
+      trackLength,
+    ),
+    start,
+    end,
+  );
 }
 
 export function hasRailDragMoved(
@@ -148,16 +157,6 @@ export function hasRailDragMoved(
   threshold: number,
 ) {
   return Math.abs(currentPosition - startPosition) >= Math.max(threshold, 0);
-}
-
-export function getRailGestureEndAction(
-  pointerType: string,
-  moved: boolean,
-  cancelled: boolean,
-) {
-  if (cancelled) return "none" as const;
-  if (moved) return "flush-drag" as const;
-  return pointerType === "mouse" ? ("tap" as const) : ("none" as const);
 }
 
 export function isReadingRailInteractive(

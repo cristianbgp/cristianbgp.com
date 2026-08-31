@@ -9,9 +9,8 @@ import {
   getRailDragProgress,
   getRailDashScale,
   getRailDragScrollTop,
+  getRailPointerProgress,
   getRailSegmentProgresses,
-  getRailViewportOffset,
-  getRailGestureEndAction,
   getReadingProgress,
   getScrollTopForProgress,
   hasRailDragMoved,
@@ -114,22 +113,17 @@ describe("getPreviewPanelOffset", () => {
 });
 
 describe("rail drag interaction", () => {
+  test("anchors a new drag to the pointer position on the track", () => {
+    expect(getRailPointerProgress(300, 100, 400)).toBe(0.5);
+    expect(getRailPointerProgress(50, 100, 400)).toBe(0);
+    expect(getRailPointerProgress(550, 100, 400)).toBe(1);
+  });
+
   test("keeps rail interaction desktop-only", () => {
     expect(isReadingRailInteractive(390, "touch")).toBe(false);
     expect(isReadingRailInteractive(1_279, "mouse")).toBe(false);
     expect(isReadingRailInteractive(1_280, "touch")).toBe(false);
     expect(isReadingRailInteractive(1_280, "mouse")).toBe(true);
-  });
-
-  test("ends touch gestures without converting them into absolute jumps", () => {
-    expect(getRailGestureEndAction("touch", false, false)).toBe("none");
-    expect(getRailGestureEndAction("touch", true, false)).toBe("flush-drag");
-    expect(getRailGestureEndAction("touch", true, true)).toBe("none");
-  });
-
-  test("keeps stationary mouse releases available for click navigation", () => {
-    expect(getRailGestureEndAction("mouse", false, false)).toBe("tap");
-    expect(getRailGestureEndAction("mouse", true, false)).toBe("flush-drag");
   });
 
   test("maps movement relative to the progress where dragging started", () => {
@@ -140,21 +134,14 @@ describe("rail drag interaction", () => {
     expect(getRailDragProgress(0.02, 300, 260, 448)).toBe(0);
   });
 
-  test("maps pointer offsets to a controlled readable scroll position", () => {
-    expect(getRailDragScrollTop(1_000, 100, 5, 200, 6_927)).toBe(1_500);
-  });
-
-  test("derives drag distance from stable viewport coordinates", () => {
-    expect(getRailViewportOffset(260, 360)).toBe(100);
+  test("maps desktop pointer movement directly across the readable range", () => {
+    expect(
+      getRailDragScrollTop(0.25, 100, 200, 400, 1_000, 5_000),
+    ).toBe(3_000);
   });
 
   test("only treats a stationary release as a tap", () => {
     expect(hasRailDragMoved(260, 265, 6)).toBe(false);
     expect(hasRailDragMoved(260, 266, 6)).toBe(true);
-  });
-
-  test("keeps mobile drag targets inside the readable scroll range", () => {
-    expect(getRailDragScrollTop(300, -140, 5, 200, 6_927)).toBe(200);
-    expect(getRailDragScrollTop(6_700, 100, 5, 200, 6_927)).toBe(6_927);
   });
 });
