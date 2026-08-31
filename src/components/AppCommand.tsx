@@ -92,7 +92,18 @@ function getCommandKey() {
   return isApple() ? "⌘" : "^";
 }
 
+function useCommandKey() {
+  const [commandKey, setCommandKey] = useState("^");
+
+  useEffect(() => {
+    setCommandKey(getCommandKey());
+  }, []);
+
+  return commandKey;
+}
+
 export function CommandKeyTrigger() {
+  const commandKey = useCommandKey();
   const [showCommandPrompt, setShowCommandPrompt] = useState(false);
 
   useEffect(() => {
@@ -118,13 +129,15 @@ export function CommandKeyTrigger() {
     >
       Press{" "}
       <kbd className="bg-muted text-muted-foreground group-hover:text-foreground pointer-events-none inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none transition-colors duration-1000">
-        <span className="text-xs">{getCommandKey()}</span>K
+        <span className="text-xs">{commandKey}</span>K
       </kbd>
     </Button>
   );
 }
 
 export function CommandPaletteSearchButton() {
+  const commandKey = useCommandKey();
+
   return (
     <Button
       className="group h-10 gap-2 px-4"
@@ -133,7 +146,7 @@ export function CommandPaletteSearchButton() {
       <SearchIcon aria-hidden="true" className="size-4" strokeWidth={1.75} />
       <span>Search the site</span>
       <kbd className="ml-1 hidden rounded border border-primary-foreground/25 px-1.5 py-0.5 font-mono text-[10px] text-primary-foreground/75 sm:inline-flex">
-        {getCommandKey()}K
+        {commandKey}K
       </kbd>
     </Button>
   );

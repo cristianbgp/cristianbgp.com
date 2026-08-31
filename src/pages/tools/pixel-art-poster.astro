@@ -1,6 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { CommandKeyTrigger } from "@/components/AppCommand";
+import PageHeader from "@/components/PageHeader.astro";
 import PixelArtPosterBuilder from "@/components/PixelArtPosterBuilder";
 ---
 
@@ -9,10 +9,11 @@ import PixelArtPosterBuilder from "@/components/PixelArtPosterBuilder";
   description="Compose pixel-art images into a custom poster and export it as PNG."
 >
   <div
-    class="relative py-10 z-10 min-h-svh pointer-events-auto w-full flex justify-center items-center flex-col"
+    class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
   >
-    <h1 class="text-balance text-4xl font-bold">Pixel Art Poster</h1>
-    <CommandKeyTrigger client:only />
-    <PixelArtPosterBuilder client:only />
+    <PageHeader title="Pixel Art Poster" />
+    <div class="w-full pt-10">
+      <PixelArtPosterBuilder client:only />
+    </div>
   </div>
 </Layout>
