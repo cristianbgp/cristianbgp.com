@@ -7,6 +7,7 @@ import ogImage from "../assets/og-image.jpg";
 import type { ImageMetadata } from "astro";
 import { resolvePageMetadata } from "@/lib/seo";
 import { toOpenGraphLocale } from "@/lib/article-metadata";
+import { getPublishedOpenGraphImagePath } from "@/lib/open-graph";
 
 interface Props {
   title?: string;
@@ -27,7 +28,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const {
   title,
   description,
-  image = ogImage,
+  image,
   imageAlt,
   ogType,
   lang = "en",
@@ -39,6 +40,11 @@ const {
 } = Astro.props;
 
 const metadata = resolvePageMetadata({ title, description, ogType, noIndex });
+const socialImage = image
+  ? new URL(image.src, Astro.url)
+  : noIndex
+    ? new URL(ogImage.src, Astro.url)
+    : new URL(getPublishedOpenGraphImagePath(Astro.url.pathname), Astro.site);
 const serializedStructuredData = structuredData
   ? JSON.stringify(structuredData).replace(/</g, "\\u003c")
   : undefined;
@@ -75,7 +81,7 @@ const serializedStructuredData = structuredData
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={metadata.documentTitle} />
 <meta property="og:description" content={metadata.description} />
-<meta property="og:image" content={new URL(image.src, Astro.url)} />
+<meta property="og:image" content={socialImage} />
 <meta property="og:image:alt" content={imageAlt ?? metadata.documentTitle} />
 {
   publishedTime && (
@@ -94,7 +100,7 @@ const serializedStructuredData = structuredData
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={metadata.documentTitle} />
 <meta property="twitter:description" content={metadata.description} />
-<meta property="twitter:image" content={new URL(image.src, Astro.url)} />
+<meta property="twitter:image" content={socialImage} />
 
 {
   serializedStructuredData && (
