@@ -15,7 +15,7 @@ import {
   getNearestProgressIndex,
   getPreviewPanelOffset,
   getRailDashScale,
-  getRailDragScrollTop,
+  getRailDragUpdate,
   getRailPointerProgress,
   getRailSegmentProgresses,
   getReadingProgress,
@@ -56,6 +56,7 @@ type ActiveDrag = {
   pointerId: number;
   startPosition: number;
   startProgress: number;
+  trackStart: number;
   trackLength: number;
 };
 
@@ -171,11 +172,45 @@ export function ArticleReadingRail({
           trackStart,
           trackLength,
         ),
+        trackStart,
         trackLength,
       };
       event.preventDefault();
     },
     [],
+  );
+
+  const updateVerticalPointerFeedback = useCallback(
+    (pointerProgress: number, trackLength?: number) => {
+      const length =
+        trackLength ??
+        verticalTrackRef.current?.getBoundingClientRect().height ??
+        0;
+      const headingIndex = getNearestProgressIndex(
+        headingDataRef.current.map((heading) => heading.progress),
+        pointerProgress,
+      );
+      const panelY = getPreviewPanelOffset(pointerProgress, length, 84);
+
+      hoveringRef.current = true;
+      updateDashWave(pointerProgress);
+      rootRef.current?.style.setProperty("--preview-y", `${panelY}px`);
+      setPreviewIndex(headingIndex >= 0 ? headingIndex : null);
+    },
+    [updateDashWave],
+  );
+
+  const handleVerticalPointerMove = useCallback(
+    (event: PointerEvent<HTMLElement>) => {
+      const bounds = verticalTrackRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+
+      updateVerticalPointerFeedback(
+        getRailPointerProgress(event.clientY, bounds.top, bounds.height),
+        bounds.height,
+      );
+    },
+    [updateVerticalPointerFeedback],
   );
 
   useEffect(() => {
@@ -200,15 +235,23 @@ export function ArticleReadingRail({
       if (!drag.moved) return;
 
       const { start, end } = metricsRef.current;
-      window.scrollTo({
-        top: getRailDragScrollTop(
-          drag.startProgress,
-          drag.startPosition,
-          currentPosition,
+      const update = getRailDragUpdate(
+        drag.startProgress,
+        drag.startPosition,
+        currentPosition,
+        drag.trackStart,
+        drag.trackLength,
+        start,
+        end,
+      );
+      if (drag.orientation === "vertical") {
+        updateVerticalPointerFeedback(
+          update.feedbackProgress,
           drag.trackLength,
-          start,
-          end,
-        ),
+        );
+      }
+      window.scrollTo({
+        top: update.scrollTop,
         behavior: "auto",
       });
     };
@@ -223,15 +266,17 @@ export function ArticleReadingRail({
       if (!cancelled && drag.moved) {
         const currentPosition = getEventPosition(event, drag.orientation);
         const { start, end } = metricsRef.current;
+        const update = getRailDragUpdate(
+          drag.startProgress,
+          drag.startPosition,
+          currentPosition,
+          drag.trackStart,
+          drag.trackLength,
+          start,
+          end,
+        );
         window.scrollTo({
-          top: getRailDragScrollTop(
-            drag.startProgress,
-            drag.startPosition,
-            currentPosition,
-            drag.trackLength,
-            start,
-            end,
-          ),
+          top: update.scrollTop,
           behavior: "auto",
         });
       } else if (!cancelled) {
@@ -275,35 +320,7 @@ export function ArticleReadingRail({
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerCancel);
     };
-  }, [handleTrackTap, restoreReadingWave]);
-
-  const handleVerticalPointerMove = useCallback(
-    (event: PointerEvent<HTMLElement>) => {
-      const track = verticalTrackRef.current;
-      if (!track) return;
-
-      const bounds = track.getBoundingClientRect();
-      const pointerPosition = clamp(event.clientY - bounds.top, 0, bounds.height);
-      const pointerProgress =
-        bounds.height > 0 ? pointerPosition / bounds.height : 0;
-      const headingIndex = getNearestProgressIndex(
-        headingDataRef.current.map((heading) => heading.progress),
-        pointerProgress,
-      );
-      const panelHeight = 84;
-      const panelY = getPreviewPanelOffset(
-        pointerProgress,
-        bounds.height,
-        panelHeight,
-      );
-
-      hoveringRef.current = true;
-      updateDashWave(pointerProgress);
-      rootRef.current?.style.setProperty("--preview-y", `${panelY}px`);
-      setPreviewIndex(headingIndex >= 0 ? headingIndex : null);
-    },
-    [updateDashWave],
-  );
+  }, [handleTrackTap, restoreReadingWave, updateVerticalPointerFeedback]);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {

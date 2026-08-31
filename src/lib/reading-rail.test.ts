@@ -9,6 +9,7 @@ import {
   getRailDragProgress,
   getRailDashScale,
   getRailDragScrollTop,
+  getRailDragUpdate,
   getRailPointerProgress,
   getRailSegmentProgresses,
   getReadingProgress,
@@ -113,6 +114,15 @@ describe("getPreviewPanelOffset", () => {
 });
 
 describe("rail drag interaction", () => {
+  test("keeps scroll and proximity feedback coordinated throughout a drag", () => {
+    expect(
+      getRailDragUpdate(0.25, 200, 400, 100, 400, 1_000, 5_000),
+    ).toEqual({ feedbackProgress: 0.75, scrollTop: 4_000 });
+    expect(
+      getRailDragUpdate(0.25, 200, 600, 100, 400, 1_000, 5_000),
+    ).toEqual({ feedbackProgress: 1, scrollTop: 5_000 });
+  });
+
   test("anchors a new drag to the pointer position on the track", () => {
     expect(getRailPointerProgress(300, 100, 400)).toBe(0.5);
     expect(getRailPointerProgress(50, 100, 400)).toBe(0);

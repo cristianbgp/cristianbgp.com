@@ -151,6 +151,32 @@ export function getRailDragScrollTop(
   );
 }
 
+export function getRailDragUpdate(
+  startProgress: number,
+  startPosition: number,
+  currentPosition: number,
+  trackStart: number,
+  trackLength: number,
+  start: number,
+  end: number,
+) {
+  return {
+    feedbackProgress: getRailPointerProgress(
+      currentPosition,
+      trackStart,
+      trackLength,
+    ),
+    scrollTop: getRailDragScrollTop(
+      startProgress,
+      startPosition,
+      currentPosition,
+      trackLength,
+      start,
+      end,
+    ),
+  };
+}
+
 export function hasRailDragMoved(
   startPosition: number,
   currentPosition: number,
