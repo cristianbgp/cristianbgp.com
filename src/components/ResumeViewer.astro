@@ -54,38 +54,11 @@ interface Resume {
 }
 
 import resumeData from "../lib/resume.json";
-import { DateTime } from "luxon";
 import { PrinterIcon } from "lucide-react";
+import { ResumeTimeline } from "./ResumeTimeline";
 
 const { basics, work, education, skills, languages } = resumeData as Resume;
-
-function formatDate(dateStr?: string): string | null {
-  if (!dateStr) return null;
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-}
-
-function getDuration(startDate: string, endDate?: string): string {
-  const start = DateTime.fromISO(startDate);
-  const end = endDate ? DateTime.fromISO(endDate) : DateTime.now();
-  
-  const diff = end.diff(start, ["years", "months"]).toObject();
-  
-  const years = Math.floor(diff.years || 0);
-  const months = Math.round(diff.months || 0);
-  
-  const parts: string[] = [];
-  
-  if (years > 0) {
-    parts.push(`${years} year${years !== 1 ? "s" : ""}`);
-  }
-  
-  if (months > 0) {
-    parts.push(`${months} month${months !== 1 ? "s" : ""}`);
-  }
-  
-  return parts.length > 0 ? `(${parts.join(", ")})` : "";
-}
+const referenceDate = new Date().toISOString().slice(0, 10);
 ---
 
 <div class="mx-auto max-w-2xl space-y-10 p-6" data-resume-content>
@@ -151,44 +124,14 @@ function getDuration(startDate: string, endDate?: string): string {
     }
   </section>
 
-  <!-- Work Experience -->
-  {
-    work && work.length > 0 && (
-      <section>
-        <h2 class="text-xl font-semibold mb-2">Experience</h2>
-        <div class="space-y-6">
-          {work.map((job: Work) => (
-            <div class="border-l-2 border-primary pl-4 relative break-inside-avoid">
-              <div class="absolute -left-[7px] top-2 w-3 h-3 bg-primary rounded-full" />
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between">
-                <div class="font-medium text-base">
-                  <a
-                    href={job.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="hover:underline"
-                  >
-                    {job.company}
-                  </a>
-                  {" - "}
-                  {job.position}
-                </div>
-                <div class="text-sm text-muted-foreground mt-1 sm:mt-0">
-                  {formatDate(job.startDate)}
-                  {job.endDate ? ` - ${formatDate(job.endDate)}` : " - Present"}
-                  {" "}
-                  {getDuration(job.startDate, job.endDate)}
-                </div>
-              </div>
-              <div class="mt-2 whitespace-pre-line text-sm leading-relaxed">
-                {job.summary}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    )
-  }
+  {work && work.length > 0 && (
+    <ResumeTimeline
+      work={work}
+      education={education}
+      referenceDate={referenceDate}
+      client:visible
+    />
+  )}
 
   <!-- Skills -->
   {
@@ -213,27 +156,6 @@ function getDuration(startDate: string, endDate?: string): string {
     )
   }
 
-  <!-- Education -->
-  {
-    education && education.length > 0 && (
-      <section>
-        <h2 class="text-xl font-semibold mb-2">Education</h2>
-        <div class="space-y-4">
-          {education.map((edu) => (
-            <div class="bg-muted rounded-md p-4">
-              <div class="font-medium">{edu.institution}</div>
-              <div class="text-sm text-muted-foreground">
-                {edu.area} ({edu.studyType})
-              </div>
-              <div class="text-xs text-muted-foreground mt-1">
-                {formatDate(edu.startDate)} - {formatDate(edu.endDate)}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    )
-  }
 
   <!-- Languages -->
   {
