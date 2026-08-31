@@ -4,7 +4,7 @@ import Layout from "@/layouts/Layout.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
 import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
-import { isExternalUrl } from "@/lib/navigation";
+import { getDestinationLabel, isExternalUrl } from "@/lib/navigation";
 
 const tools = (await getCollection("tools")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
@@ -73,7 +73,7 @@ const groups = [
                           strokeWidth={1.75}
                         />
                         <div class="col-span-2 flex items-center justify-between gap-4 text-xs text-muted-foreground sm:col-span-1">
-                          <span>{isExternal ? "External project" : "Interactive tool"}</span>
+                          <span>{getDestinationLabel(tool.data.url)}</span>
                           <FormattedDate date={tool.data.date} locale="en" />
                         </div>
                       </a>
