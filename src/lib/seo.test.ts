@@ -20,4 +20,13 @@ describe("resolvePageMetadata", () => {
       ogType: "website",
     });
   });
+
+  test("marks utility pages as unavailable for indexing", () => {
+    expect(resolvePageMetadata({ noIndex: true })).toEqual({
+      description: "@cristianbgp",
+      documentTitle: "Cristian Granda",
+      ogType: "website",
+      robots: "noindex, follow",
+    });
+  });
 });

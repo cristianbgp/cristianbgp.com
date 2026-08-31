@@ -19,6 +19,7 @@ interface Props {
   modifiedTime?: Date;
   tags?: string[];
   structuredData?: Record<string, unknown>;
+  noIndex?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -34,9 +35,10 @@ const {
   modifiedTime,
   tags = [],
   structuredData,
+  noIndex = false,
 } = Astro.props;
 
-const metadata = resolvePageMetadata({ title, description, ogType });
+const metadata = resolvePageMetadata({ title, description, ogType, noIndex });
 const serializedStructuredData = structuredData
   ? JSON.stringify(structuredData).replace(/</g, "\\u003c")
   : undefined;
@@ -63,6 +65,9 @@ const serializedStructuredData = structuredData
 <title>{metadata.documentTitle}</title>
 <meta name="title" content={metadata.documentTitle} />
 <meta name="description" content={metadata.description} />
+{
+  "robots" in metadata && <meta name="robots" content={metadata.robots} />
+}
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content={metadata.ogType} />

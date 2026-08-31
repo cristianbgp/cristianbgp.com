@@ -16,6 +16,7 @@ type Props = {
   modifiedTime?: Date;
   tags?: string[];
   structuredData?: Record<string, unknown>;
+  noIndex?: boolean;
 };
 
 const {
@@ -29,6 +30,7 @@ const {
   modifiedTime,
   tags,
   structuredData,
+  noIndex = false,
 } = Astro.props;
 
 const [articleEntries, toolEntries] = await Promise.all([
@@ -69,6 +71,7 @@ const tools = toolEntries
       modifiedTime={modifiedTime}
       tags={tags}
       structuredData={structuredData}
+      noIndex={noIndex}
     />
     <script is:inline>
       const getThemePreference = () => {

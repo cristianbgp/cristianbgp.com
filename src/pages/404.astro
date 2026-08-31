@@ -1,0 +1,53 @@
+---
+import { ArrowLeftIcon } from "lucide-react";
+
+import { CommandPaletteSearchButton } from "@/components/AppCommand";
+import PageHeader from "@/components/PageHeader.astro";
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout
+  title="Page not found"
+  description="The page you requested could not be found."
+  noIndex
+>
+  <div
+    class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start py-10 pointer-events-auto"
+  >
+    <PageHeader title="404" />
+
+    <section
+      aria-labelledby="not-found-title"
+      class="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center px-6 pb-24 pt-16 sm:pb-32"
+    >
+      <p class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        Lost route
+      </p>
+      <h2
+        id="not-found-title"
+        class="max-w-lg text-balance text-3xl font-bold tracking-tight sm:text-4xl"
+      >
+        This page doesn’t exist.
+      </h2>
+      <p class="mt-4 max-w-md text-pretty leading-relaxed text-muted-foreground">
+        It may have moved, or the address might be incomplete. Search the site
+        or return to the beginning.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <CommandPaletteSearchButton client:load />
+        <a
+          href="/"
+          class="group inline-flex h-10 items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeftIcon
+            aria-hidden="true"
+            className="size-4 transition-transform group-hover:-translate-x-0.5 group-focus-visible:-translate-x-0.5"
+            strokeWidth={1.75}
+          />
+          Go home
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>

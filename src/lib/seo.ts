@@ -8,16 +8,19 @@ type PageMetadata = {
   title?: string;
   description?: string;
   ogType?: "website" | "article";
+  noIndex?: boolean;
 };
 
 export function resolvePageMetadata({
   title,
   description = "@cristianbgp",
   ogType = "website",
+  noIndex = false,
 }: PageMetadata) {
   return {
     description,
     documentTitle: getDocumentTitle(title),
     ogType,
+    ...(noIndex ? { robots: "noindex, follow" } : {}),
   };
 }
