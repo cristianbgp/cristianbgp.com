@@ -38,6 +38,11 @@ import { Button } from "@/components/ui/button";
 import { getCommandPaletteData } from "@/lib/command-palette";
 import { isExternalUrl } from "@/lib/navigation";
 
+async function navigateWithinSite(path: string) {
+  const { navigate } = await import("astro:transitions/client");
+  return navigate(path);
+}
+
 type CommandArticle = {
   id: string;
   title: string;
@@ -168,10 +173,6 @@ export function AppCommand({
     () => getCommandPaletteData({ articles, currentPath, tools }),
     [articles, currentPath, tools],
   );
-  const navigate = (path: string) => {
-    window.location.href = path;
-  };
-
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "theme-light" : "dark");
   };
@@ -227,7 +228,7 @@ export function AppCommand({
               <CommandItem
                 key={page.id}
                 keywords={[...page.keywords]}
-                onSelect={() => onSelect(() => navigate(page.path))}
+                onSelect={() => onSelect(() => navigateWithinSite(page.path))}
               >
                 <PageIcon />
                 <CommandItemLabel
@@ -251,7 +252,7 @@ export function AppCommand({
                     if (isExternalUrl(tool.url)) {
                       window.open(tool.url, "_blank", "noopener,noreferrer");
                     } else {
-                      navigate(tool.url);
+                      navigateWithinSite(tool.url);
                     }
                   })
                 }
@@ -274,7 +275,7 @@ export function AppCommand({
                 key={article.id}
                 keywords={article.keywords}
                 onSelect={() =>
-                  onSelect(() => navigate(article.path))
+                  onSelect(() => navigateWithinSite(article.path))
                 }
               >
                 <BookTextIcon />

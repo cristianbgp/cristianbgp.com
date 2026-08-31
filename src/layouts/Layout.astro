@@ -4,6 +4,7 @@ import { AppCommand } from "@/components/AppCommand";
 import { Toaster } from "@/components/ui/sonner";
 import { getCollection } from "astro:content";
 import { getPublishedArticles } from "@/lib/articles";
+import { ClientRouter } from "astro:transitions";
 
 type Props = {
   title?: string;
@@ -73,6 +74,7 @@ const tools = toolEntries
       structuredData={structuredData}
       noIndex={noIndex}
     />
+    <ClientRouter />
     <script is:inline>
       const getThemePreference = () => {
         if (localStorage.getItem("theme")) {
