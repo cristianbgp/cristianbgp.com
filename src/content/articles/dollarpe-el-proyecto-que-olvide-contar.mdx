@@ -1,0 +1,85 @@
+---
+title: "dollarpe, el proyecto de 2019 que olvidé contar"
+description: "Un pequeño script que hice para saber dónde nos convenía cambiar nuestros dólares"
+date: "2026-09-01T00:00:00.000Z"
+published: true
+tags: ["dollarpe", "cli", "api", "open source", "perú"]
+lang: "es"
+---
+
+En 2019, cuando llegaba el pago, en el trabajo aparecía siempre la misma pregunta: ¿dónde nos conviene cambiar nuestros dólares?
+
+A mis compañeros y a mí nos pagaban en dólares, pero vivíamos y gastábamos en soles. Elegir una casa de cambio podía parecer una decisión pequeña, aunque la diferencia se hacía visible al convertir el sueldo completo. El problema era que para comparar había que abrir varias páginas, buscar sus tasas y ordenar los números mentalmente.
+
+Como trabajábamos en un entorno de programadores, también me llamaba la atención poder hacer la consulta rápidamente sin salir del terminal.
+
+Como suelo hacer cuando una tarea se vuelve repetitiva, hice un script para dejar de hacerla a mano.
+
+## Un comando y nada más
+
+Así nació [dollarpe](https://www.npmjs.com/package/dollarpe), un CLI que reunía las tasas de distintas casas de cambio peruanas y las ordenaba para mostrar primero la opción más conveniente.
+
+Se instalaba globalmente desde npm:
+
+```bash
+npm install -g dollarpe
+```
+
+Después solo había que ejecutar:
+
+```bash
+dollarpe
+```
+
+La primera versión estaba escrita en JavaScript puro. No había un algoritmo detrás y tampoco lo hay ahora. dollarpe hace varios requests, normaliza las respuestas y ordena los resultados. Era una herramienta pequeña, hecha para resolver una necesidad que se repetía cada vez que nos pagaban.
+
+Esa simplicidad era precisamente lo que me gustaba. Nadie tenía que recordar qué páginas revisar ni copiar las tasas. Bastaba con escribir una palabra en la terminal.
+
+## Del CLI a una API
+
+Con el tiempo extraje la lógica de esos requests y la convertí en una API. El CLI dejó de ser el único consumidor posible y la información quedó disponible desde un endpoint para cualquier aplicación que quisiera utilizarla.
+
+Trabajar con proveedores externos también hizo evidente una limitación: sus endpoints pueden cambiar, devolver datos inválidos, tardar demasiado o bloquear solicitudes. Algunos ni siquiera son APIs públicas documentadas, sino los endpoints que las propias páginas usan para obtener sus tasas.
+
+La API es transparente sobre esa fragilidad. Si un proveedor falla, no hace fallar la respuesta de los demás. Incluye las integraciones que respondieron correctamente y omite temporalmente la que tuvo problemas. Solo devuelve un error completo cuando ninguna fuente está disponible.
+
+Hoy la API está disponible en [dollarpe-api.cristianbgp.com](https://dollarpe-api.cristianbgp.com). Las tasas se pueden consultar desde [`/exchanges`](https://dollarpe-api.cristianbgp.com/exchanges) y su documentación está en [`/docs`](https://dollarpe-api.cristianbgp.com/docs).
+
+## Tres proyectos vuelven a ser dollarpe
+
+Durante un tiempo, el CLI, la API y la web vivieron en repositorios separados. Tenía sentido mientras cada parte crecía por su cuenta, pero llegó un momento en el que hacer un cambio completo significaba saltar entre tres lugares distintos.
+
+Ahora todo vuelve a estar reunido en [github.com/cristianbgp/dollarpe](https://github.com/cristianbgp/dollarpe), el repositorio que originalmente pertenecía al CLI. Decidí conservarlo porque ahí ya estaba la historia pública del proyecto: sus commits, releases, tags, estrellas y el paquete que sigue publicado en npm.
+
+El repositorio tiene tres aplicaciones:
+
+```text
+dollarpe
+├── apps/api
+├── apps/cli
+└── apps/web
+```
+
+La raíz solo coordina los comandos que permiten validarlas juntas. Esto deja que el CLI siga publicándose como un paquete independiente y que Cloudflare construya la API y la web sin instalar todo lo demás.
+
+La API describe sus endpoints con OpenAPI. A partir de ese documento se generan los clientes que usan el CLI y la web, así que ambos consumen el mismo contrato sin compartir manualmente una colección de tipos. La implementación de cada aplicación sigue separada.
+
+El CLI continúa disponible como [`dollarpe` en npm](https://www.npmjs.com/package/dollarpe), con el mismo nombre y el mismo comando. La web vive en [dollarpe.cristianbgp.com](https://dollarpe.cristianbgp.com) y recrea la experiencia de ejecutar `dollarpe` desde una terminal, esta vez en el navegador.
+
+## dollarpe hoy
+
+El proyecto sigue vivo, aunque ya no es exactamente aquel script de 2019. La API corre como un Cloudflare Worker construido con TypeScript y Hono. Cada proveedor tiene su propio módulo, las tasas se validan antes de publicarse y una pequeña capa de caché reduce las solicitudes hacia servicios que pueden ser inestables.
+
+También incluye el tipo de cambio oficial de SUNAT. La tasa es oficial, pero la integración utiliza un endpoint interno y no documentado que podría cambiar. Por eso SUNAT se trata como otro proveedor que puede fallar, no como una dependencia capaz de detener toda la API.
+
+Aunque ahora hay tres aplicaciones dentro del repositorio, la idea sigue siendo la misma: reunir varias fuentes, ordenar las tasas y devolver una respuesta útil sin complicar demasiado el proceso.
+
+## El post que quedó pendiente
+
+Nunca escribí sobre dollarpe cuando lo construí. Al volver a verlo siento un poco de todo: orgullo porque resolvió un problema real, nostalgia por esa etapa y sorpresa porque la idea todavía resulta útil.
+
+También me recuerda que ya entonces disfrutaba esta forma de trabajar: detectar algo incómodo en una rutina y convertirlo en una herramienta pequeña después de entenderlo lo suficiente. dollarpe no nació como una gran apuesta de producto. Nació porque en el trabajo queríamos saber dónde cambiar mejor nuestros dólares.
+
+El proyecto es [de código abierto](https://github.com/cristianbgp/dollarpe). Al final, cada integración es una colección de requests y reglas para transformar respuestas distintas en un formato común. Si una casa de cambio deja de funcionar, alguien puede enviar un PR para repararla. Si aparece un nuevo proveedor, también puede agregarlo.
+
+Quizá este artículo llega siete años tarde, pero dollarpe por fin tiene el post que olvidé escribir.
