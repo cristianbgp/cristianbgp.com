@@ -1,19 +1,53 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { CommandKeyTrigger } from "@/components/AppCommand";
+import { ContentAnnouncementIndicator } from "@/components/ContentAnnouncementIndicator";
 import SocialLinks from "@/components/SocialLinks";
 import { TypingText } from "@/components/animate-ui/text/typing";
+import { getCollection } from "astro:content";
+import { getPublishedArticles } from "@/lib/articles";
+import { createContentAnnouncement } from "@/lib/content-announcements";
+
+const [articleEntries, toolEntries] = await Promise.all([
+  getCollection("articles"),
+  getCollection("tools"),
+]);
+
+const announcements = [
+  ...getPublishedArticles(articleEntries)
+    .filter(({ data }) => !data.archived)
+    .map(({ id, data }) =>
+      createContentAnnouncement({
+        type: "article",
+        title: data.title,
+        href: `/articles/${id}`,
+        date: data.date,
+      }),
+    ),
+  ...toolEntries.map(({ data }) =>
+    createContentAnnouncement({
+      type: "tool",
+      title: data.title,
+      href: data.url,
+      date: data.date,
+    }),
+  ),
+];
 ---
 
 <Layout description="Personal website of software engineer Cristian Granda.">
   <div
     class="relative z-10 h-full gap-4 pointer-events-none w-full flex justify-center items-center flex-col min-h-svh"
   >
+    <ContentAnnouncementIndicator
+      announcements={announcements}
+      client:only="react"
+    />
     <div class="min-h-12 min-w-[10px] text-balance">
       <h1 class="sr-only">Cristian Granda</h1>
       <TypingText
         aria-hidden="true"
-        className="text-4xl font-bold pointer-events-auto"
+        className="whitespace-nowrap text-4xl font-bold pointer-events-auto"
         text={["Cristian Granda", "@cristianbgp"]}
         cursor
         loop
