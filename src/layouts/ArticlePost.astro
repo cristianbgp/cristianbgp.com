@@ -6,6 +6,7 @@ import Layout from "./Layout.astro";
 import { AlertTriangleIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ArticleReadingRail } from "@/components/ArticleReadingRail";
+import { ArticleShareButton } from "@/components/ArticleShareButton";
 import { buildArticleStructuredData } from "@/lib/article-metadata";
 import ogImage from "@/assets/og-image.jpg";
 
@@ -104,6 +105,13 @@ const structuredData = buildArticleStructuredData({
           >
             <slot />
           </div>
+          <ArticleShareButton
+            client:visible
+            title={title}
+            description={description}
+            url={articleUrl}
+            lang={lang}
+          />
         </div>
       </article>
     </div>
