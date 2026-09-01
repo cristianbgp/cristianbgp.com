@@ -6,6 +6,7 @@ published: true
 tags: ["dollarpe", "cli", "api", "open source", "perú"]
 lang: "es"
 ---
+import FileTree from "@/components/FileTree";
 
 En 2019, cuando llegaba el pago, en el trabajo aparecía siempre la misma pregunta: ¿dónde nos conviene cambiar nuestros dólares?
 
@@ -53,12 +54,28 @@ Ahora todo vuelve a estar reunido en [github.com/cristianbgp/dollarpe](https://g
 
 El repositorio tiene tres aplicaciones:
 
-```text
-dollarpe
-├── apps/api
-├── apps/cli
-└── apps/web
-```
+<FileTree
+  client:load
+  data={[
+    {
+      type: "folder",
+      name: "dollarpe",
+      defaultOpen: ["apps"],
+      children: [
+        {
+          type: "folder",
+          name: "apps",
+          children: [
+            { type: "folder", name: "api" },
+            { type: "folder", name: "cli" },
+            { type: "folder", name: "web" },
+          ],
+        },
+      ],
+    },
+  ]}
+  defaultOpen={["dollarpe"]}
+/>
 
 La raíz solo coordina los comandos que permiten validarlas juntas. Esto deja que el CLI siga publicándose como un paquete independiente y que Cloudflare construya la API y la web sin instalar todo lo demás.
 
