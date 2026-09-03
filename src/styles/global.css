@@ -202,6 +202,50 @@ pre {
   background-color: #0d0d0d !important;
 }
 
+[data-article-body] :not(pre) > code {
+  padding: 0.12em 0.34em;
+  border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+  border-radius: 0.3rem;
+  background: color-mix(in oklab, var(--muted) 78%, transparent);
+  color: var(--foreground);
+  font-size: 0.875em;
+  font-weight: 500;
+  font-variant-ligatures: none;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+[data-article-body] :not(pre) > code::before,
+[data-article-body] :not(pre) > code::after {
+  content: none;
+}
+
+[data-article-body] a:has(> code) {
+  text-decoration: none;
+}
+
+[data-article-body] a > code {
+  border-color: color-mix(in oklab, var(--foreground) 24%, var(--border));
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+[data-article-body] a:hover > code {
+  border-color: color-mix(in oklab, var(--foreground) 42%, var(--border));
+  background: var(--accent);
+}
+
+[data-article-body] :is(h1, h2, h3, h4, h5, h6) > code {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1em;
+  font-weight: inherit;
+}
+
 .article-reading-rail {
   --reading-progress: 0;
   color: color-mix(in oklab, var(--foreground) 38%, transparent);

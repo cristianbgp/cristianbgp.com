@@ -2,10 +2,12 @@
 import { type CollectionEntry, getCollection } from 'astro:content';
 import ArticlePost from '@/layouts/ArticlePost.astro';
 import { render } from 'astro:content';
-import { getPublishedArticles } from '@/lib/articles';
+import { getVisibleArticles } from '@/lib/articles';
 
 export async function getStaticPaths() {
-	const articles = getPublishedArticles(await getCollection('articles'));
+	const articles = getVisibleArticles(await getCollection('articles'), {
+		includeDrafts: import.meta.env.DEV,
+	});
 	return articles.map((post) => ({
 		params: { slug: post.id },
 		props: post,

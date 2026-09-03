@@ -24,11 +24,12 @@ const readingMinutes = estimateReadingMinutes(post.body ?? "");
     href={`/articles/${post.id}/`}
     class="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   >
-    {
-      post.data.archived && (
-        <p class="text-sm text-neutral-500">Archived</p>
-      )
-    }
+    {(!post.data.published || post.data.archived) && (
+      <div class="flex items-center gap-2 text-sm text-neutral-500">
+        {!post.data.published && <span>Draft</span>}
+        {post.data.archived && <span>Archived</span>}
+      </div>
+    )}
     <h3
       class={cn(
         "title text-2xl font-bold",

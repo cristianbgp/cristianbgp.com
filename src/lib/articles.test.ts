@@ -4,6 +4,7 @@ import {
   countActiveArticleFilters,
   getArticleFilterOptions,
   getPublishedArticles,
+  getVisibleArticles,
   groupArticles,
   matchesArticleFilters,
 } from "./articles";
@@ -42,6 +43,29 @@ describe("getPublishedArticles", () => {
       "published",
       "archived",
     ]);
+  });
+});
+
+describe("getVisibleArticles", () => {
+  const articles = [
+    { id: "published", data: { published: true } },
+    { id: "draft", data: { published: false } },
+  ];
+
+  test("keeps drafts hidden outside development", () => {
+    expect(
+      getVisibleArticles(articles, { includeDrafts: false }).map(
+        (article) => article.id,
+      ),
+    ).toEqual(["published"]);
+  });
+
+  test("includes drafts during local development", () => {
+    expect(
+      getVisibleArticles(articles, { includeDrafts: true }).map(
+        (article) => article.id,
+      ),
+    ).toEqual(["published", "draft"]);
   });
 });
 

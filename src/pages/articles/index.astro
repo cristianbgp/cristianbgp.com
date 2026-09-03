@@ -7,10 +7,12 @@ import Layout from "@/layouts/Layout.astro";
 import {
   ARTICLE_FILTER_QUERY_KEYS,
   getArticleFilterOptions,
-  getPublishedArticles,
+  getVisibleArticles,
 } from "@/lib/articles";
 
-const posts = getPublishedArticles(await getCollection("articles"))
+const posts = getVisibleArticles(await getCollection("articles"), {
+  includeDrafts: import.meta.env.DEV,
+})
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 const { languages, tags } = getArticleFilterOptions(posts);
 const currentTotal = posts.filter((post) => !post.data.archived).length;

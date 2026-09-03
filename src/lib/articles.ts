@@ -10,6 +10,13 @@ export function getPublishedArticles<T extends PublishableArticle>(
   return articles.filter((article) => article.data.published);
 }
 
+export function getVisibleArticles<T extends PublishableArticle>(
+  articles: T[],
+  { includeDrafts }: { includeDrafts: boolean },
+): T[] {
+  return includeDrafts ? articles : getPublishedArticles(articles);
+}
+
 type ArchivableArticle = {
   data: {
     archived?: boolean;
