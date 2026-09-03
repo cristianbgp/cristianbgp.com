@@ -2,7 +2,23 @@ import type { ReactNode } from "react";
 
 const SITE_ORIGIN = "https://cristianbgp.com";
 
-function getFaviconUrl(href: string): string | null {
+export type FaviconResolver = (url: URL) => string | null;
+
+const googleFaviconResolver: FaviconResolver = (url) => {
+  const params = new URLSearchParams({
+    domain_url: url.origin,
+    sz: "32",
+  });
+
+  // Google S2 is undocumented. If it becomes unreliable, use:
+  // https://icons.duckduckgo.com/ip3/${url.hostname}.ico
+  return `https://www.google.com/s2/favicons?${params.toString()}`;
+};
+
+function getFaviconUrl(
+  href: string,
+  faviconResolver: FaviconResolver,
+): string | null {
   let url: URL;
 
   try {
@@ -19,14 +35,7 @@ function getFaviconUrl(href: string): string | null {
     return "/favicon.png";
   }
 
-  const params = new URLSearchParams({
-    domain_url: url.origin,
-    sz: "32",
-  });
-
-  // Google S2 is undocumented. If it becomes unreliable, use:
-  // https://icons.duckduckgo.com/ip3/${url.hostname}.ico
-  return `https://www.google.com/s2/favicons?${params.toString()}`;
+  return faviconResolver(url);
 }
 
 export default function FaviconLink({
@@ -34,13 +43,17 @@ export default function FaviconLink({
   children,
   external = false,
   hideFavicon = false,
+  faviconResolver = googleFaviconResolver,
 }: {
   href: string;
   children: ReactNode;
   external?: boolean;
   hideFavicon?: boolean;
+  faviconResolver?: FaviconResolver;
 }) {
-  const faviconUrl = getFaviconUrl(href);
+  const faviconUrl = hideFavicon
+    ? null
+    : getFaviconUrl(href, faviconResolver);
 
   return (
     <a

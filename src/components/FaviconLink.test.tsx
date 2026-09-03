@@ -63,3 +63,49 @@ test("hides the favicon without changing external link behavior", () => {
   expect(markup).toContain('target="_blank"');
   expect(markup).toContain('rel="noopener noreferrer"');
 });
+
+test("uses an optional favicon resolver for external links", () => {
+  const markup = renderToStaticMarkup(
+    <FaviconLink
+      href="https://react.dev/learn"
+      faviconResolver={(url) =>
+        `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`
+      }
+    >
+      React
+    </FaviconLink>,
+  );
+
+  expect(markup).toContain(
+    'src="https://icons.duckduckgo.com/ip3/react.dev.ico"',
+  );
+});
+
+test("allows a favicon resolver to omit the image", () => {
+  const markup = renderToStaticMarkup(
+    <FaviconLink href="https://react.dev/" faviconResolver={() => null}>
+      React
+    </FaviconLink>,
+  );
+
+  expect(markup).not.toContain("<img");
+});
+
+test("does not call the favicon resolver when the favicon is hidden", () => {
+  let calls = 0;
+
+  renderToStaticMarkup(
+    <FaviconLink
+      href="https://react.dev/"
+      hideFavicon
+      faviconResolver={() => {
+        calls += 1;
+        return "https://example.com/favicon.png";
+      }}
+    >
+      React
+    </FaviconLink>,
+  );
+
+  expect(calls).toBe(0);
+});
