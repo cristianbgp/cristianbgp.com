@@ -1,0 +1,171 @@
+---
+title: "Un componente de enlaces con favicon en React"
+description: "Cómo mostrar el favicon de un sitio junto a cualquier enlace con un pequeño componente reutilizable"
+date: "2026-09-03T00:00:00.000Z"
+published: true
+tags: ["react", "typescript", "mdx", "ui"]
+lang: "es"
+---
+import FaviconLink from "@/components/FaviconLink";
+
+Quería que los enlaces dentro de mis artículos fueran más fáciles de reconocer. La magia ocurre en un endpoint no documentado de Google que devuelve el favicon de casi cualquier dominio:
+
+```text
+https://www.google.com/s2/favicons?domain_url=https://react.dev&sz=32
+```
+
+`domain_url` indica el sitio y `sz` sugiere el tamaño de la imagen. Solicito 32 píxeles para mostrarla más pequeña y mantenerla nítida en pantallas de alta densidad. Si Google no encuentra ese tamaño, devuelve el favicon disponible.
+
+El endpoint funciona sin una API key, pero no es una API pública documentada. Google puede cambiarlo o retirarlo. Además, cada imagen produce una petición externa desde el navegador. `referrerPolicy="no-referrer"` evita enviar la URL del artículo, aunque Google todavía recibe el dominio consultado.
+
+Con esa URL hice `FaviconLink`, un componente que se puede usar así:
+
+- <FaviconLink href="https://react.dev/" external>React</FaviconLink>
+- <FaviconLink href="https://www.typescriptlang.org/" external>TypeScript</FaviconLink>
+- <FaviconLink href="https://astro.build/" external>Astro</FaviconLink>
+- <FaviconLink href="https://bun.sh/" external>Bun</FaviconLink>
+- <FaviconLink href="https://tailwindcss.com/" external>Tailwind CSS</FaviconLink>
+- <FaviconLink href="https://github.com/" external>GitHub</FaviconLink>
+- <FaviconLink href="https://www.npmjs.com/" external>npm</FaviconLink>
+
+Este ejemplo está escrito en React, pero la lógica no depende de React. La misma función para construir la URL del favicon se puede usar en Astro, Vue, Svelte, SolidJS o JavaScript sin un framework.
+
+Este es el componente completo:
+
+```tsx
+import type { ReactNode } from "react";
+
+const SITE_ORIGIN = "https://example.com";
+
+export type FaviconResolver = (url: URL) => string | null;
+
+const googleFaviconResolver: FaviconResolver = (url) => {
+  const params = new URLSearchParams({
+    domain_url: url.origin,
+    sz: "32",
+  });
+
+  // Google S2 is undocumented. If it becomes unreliable, use:
+  // https://icons.duckduckgo.com/ip3/${url.hostname}.ico
+  return `https://www.google.com/s2/favicons?${params.toString()}`;
+};
+
+function getFaviconUrl(
+  href: string,
+  faviconResolver: FaviconResolver,
+): string | null {
+  let url: URL;
+
+  try {
+    url = new URL(href, SITE_ORIGIN);
+  } catch {
+    return null;
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    return null;
+  }
+
+  if (url.origin === SITE_ORIGIN) {
+    return "/favicon.png";
+  }
+
+  return faviconResolver(url);
+}
+
+export default function FaviconLink({
+  href,
+  children,
+  external = false,
+  hideFavicon = false,
+  faviconResolver = googleFaviconResolver,
+}: {
+  href: string;
+  children: ReactNode;
+  external?: boolean;
+  hideFavicon?: boolean;
+  faviconResolver?: FaviconResolver;
+}) {
+  const faviconUrl = hideFavicon
+    ? null
+    : getFaviconUrl(href, faviconResolver);
+
+  return (
+    <a
+      href={href}
+      target={external ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      className="group inline-flex max-w-full items-center gap-[0.3em] whitespace-nowrap rounded-[0.3rem] align-baseline text-inherit no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      {!hideFavicon && faviconUrl ? (
+        <img
+          src={faviconUrl}
+          alt=""
+          aria-hidden="true"
+          width="16"
+          height="16"
+          loading="lazy"
+          decoding="async"
+          referrerPolicy="no-referrer"
+          className="!m-0 size-[0.875em] shrink-0 rounded-[0.125rem]"
+        />
+      ) : null}
+      <span className="rounded-[0.3rem] border border-foreground/25 bg-muted/80 px-[0.34em] py-[0.12em] font-mono text-[0.875em] font-medium text-foreground [font-variant-ligatures:none] transition-colors duration-150 group-hover:border-foreground/40 group-hover:bg-accent">
+        {children}
+      </span>
+    </a>
+  );
+}
+```
+
+Cambia `SITE_ORIGIN` por el origen de tu aplicación. Las clases de Tailwind solo controlan la presentación y se pueden reemplazar sin tocar la lógica.
+
+El uso básico necesita una URL y el texto del enlace:
+
+```tsx
+<FaviconLink href="https://react.dev/">React</FaviconLink>
+```
+
+`external` abre el enlace en otra pestaña:
+
+```tsx
+<FaviconLink href="https://www.typescriptlang.org/" external>
+  TypeScript
+</FaviconLink>
+```
+
+También puedes conservar el estilo y ocultar el icono:
+
+```tsx
+<FaviconLink href="https://astro.build/" hideFavicon>
+  Astro
+</FaviconLink>
+```
+
+`faviconResolver` es opcional. Sirve para cambiar el servicio sin modificar el componente. En este ejemplo se usa otro endpoint de DuckDuckGo que también puede obtener el favicon de un dominio:
+
+```tsx
+<FaviconLink
+  href="https://react.dev/"
+  faviconResolver={(url) =>
+    `https://icons.duckduckgo.com/ip3/${url.hostname}.ico`
+  }
+>
+  React
+</FaviconLink>
+```
+
+Esto puede servir como alternativa si el endpoint de Google deja de funcionar. También puedes usar el prop para apuntar a un proxy o a cualquier otro servicio que devuelva una URL de imagen.
+
+## Usarlo en MDX
+
+En este sitio lo importo de forma explícita dentro de los artículos MDX:
+
+```tsx
+import FaviconLink from "@/components/FaviconLink";
+
+Uso <FaviconLink href="https://react.dev/">React</FaviconLink>
+para construir interfaces.
+```
+
+Como no usa estado ni efectos, puede renderizarse como HTML estático sin hidratar React en el navegador.
