@@ -29,6 +29,13 @@
   },
   "work": [
     {
+      "company": "Rumbo",
+      "position": "Software Engineer",
+      "summary": "Client: Jockey Plaza\n- Developed and modernized JWORK, a full-stack platform for coworking operations, subscriptions, and corporate services.\n- Built contract-based subscription, recurring payment, booking, company, manager, and member workflows across a Next.js frontend and NestJS/PostgreSQL backend. Integrated REST APIs, Culqi, and Auth0; automated notifications; implemented business and transactional validations; and kept contracts aligned through OpenAPI and Orval.\n- Worked with TypeScript, React 19, Tailwind CSS, Material UI, Zustand, TanStack Query, Axios, Vitest, AWS, date-fns, and dayjs.",
+      "website": "https://rumbo.la",
+      "startDate": "2026-07-07"
+    },
+    {
       "company": "Able",
       "position": "Software Engineer",
       "summary": "Developed features for a healthcare federated data network, enabling privacy-preserving collaboration across distributed data sources. \nContributed to the design of federated data workflows, patient identity matching, and data access interfaces that allowed organizations to query and analyze combined datasets without moving raw data between institutions.",
@@ -79,10 +86,12 @@
         "Expo",
         "SolidJS",
         "Next.js",
-        "Tailwind",
-        "Shadcn UI",
+        "Tailwind CSS",
+        "shadcn/ui",
         "Zustand",
-        "Tanstack Query",
+        "TanStack Query",
+        "Orval",
+        "Vitest",
         "Jest",
         "Testing Library"
       ]
@@ -93,6 +102,7 @@
         "Node.js",
         "Express",
         "Hono",
+        "NestJS",
         "Prisma",
         "Supabase",
         "Drizzle",
@@ -100,7 +110,8 @@
         "Rails",
         "PostgreSQL",
         "Redis",
-        "Docker"
+        "Docker",
+        "OpenAPI"
       ]
     },
     {
