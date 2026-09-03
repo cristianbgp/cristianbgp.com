@@ -7,6 +7,7 @@ import {
   CircleDotIcon,
   Code2Icon,
   Home,
+  MonitorCog,
   Moon,
   NotebookTextIcon,
   SearchIcon,
@@ -174,7 +175,7 @@ export function AppCommand({
     [articles, currentPath, tools],
   );
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "theme-light" : "dark");
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const onSelect = (cb: () => void) => {
@@ -310,6 +311,16 @@ export function AppCommand({
               title="Toggle theme"
             />
             <CommandShortcut>{getCommandKey()}I</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            keywords={["appearance", "device", "system", "theme"]}
+            onSelect={() => onSelect(() => setTheme("system"))}
+          >
+            <MonitorCog />
+            <CommandItemLabel
+              description="Remove the saved preference and follow your device"
+              title="Use system theme"
+            />
           </CommandItem>
         </CommandGroup>
       </CommandList>

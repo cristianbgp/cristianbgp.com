@@ -87,7 +87,6 @@ const tools = toolEntries
 
       const syncTheme = () => {
         const isDark = document.documentElement.classList.contains("dark");
-        localStorage.setItem("theme", isDark ? "dark" : "light");
         document
           .querySelector('meta[name="theme-color"]')
           ?.setAttribute("content", isDark ? "#000000" : "#ffffff");
@@ -95,9 +94,19 @@ const tools = toolEntries
 
       const isDark = getThemePreference() === "dark";
       document.documentElement.classList[isDark ? "add" : "remove"]("dark");
-      new MutationObserver(syncTheme).observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class"],
+      document.addEventListener("astro:before-swap", (event) => {
+        event.newDocument.documentElement.classList.toggle(
+          "dark",
+          document.documentElement.classList.contains("dark"),
+        );
+        event.newDocument
+          .querySelector('meta[name="theme-color"]')
+          ?.setAttribute(
+            "content",
+            document.documentElement.classList.contains("dark")
+              ? "#000000"
+              : "#ffffff",
+          );
       });
       syncTheme();
     </script>

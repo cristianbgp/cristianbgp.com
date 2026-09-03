@@ -1,22 +1,66 @@
-import { $theme, setTheme } from "@/stores/app-store";
+import {
+  $theme,
+  parseThemePreference,
+  resolveTheme,
+  serializeThemePreference,
+  setTheme as setThemePreference,
+  type ResolvedTheme,
+  type ThemePreference,
+} from "@/stores/app-store";
 import { useStore } from "@nanostores/react";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+const systemThemeQuery = "(prefers-color-scheme: dark)";
+
+function applyTheme(theme: ResolvedTheme) {
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark", isDark);
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", isDark ? "#000000" : "#ffffff");
+}
 
 export function useTheme() {
-  const theme = useStore($theme);
+  const preference = useStore($theme);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [theme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setTheme(isDarkMode ? "dark" : "theme-light");
+    setThemePreference(
+      parseThemePreference(window.localStorage.getItem("theme")),
+    );
+    setIsInitialized(true);
   }, []);
 
   useEffect(() => {
-    const isDark =
-      theme === "dark" ||
-      (theme === "system" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList[isDark ? "add" : "remove"]("dark");
-  }, [theme]);
+    if (!isInitialized) return;
 
-  return { theme, setTheme };
+    const systemTheme = window.matchMedia(systemThemeQuery);
+    const syncResolvedTheme = () => {
+      const resolvedTheme = resolveTheme(preference, systemTheme.matches);
+      setResolvedTheme(resolvedTheme);
+      applyTheme(resolvedTheme);
+    };
+
+    syncResolvedTheme();
+
+    if (preference !== "system") return;
+
+    systemTheme.addEventListener("change", syncResolvedTheme);
+    return () => systemTheme.removeEventListener("change", syncResolvedTheme);
+  }, [isInitialized, preference]);
+
+  const setTheme = useCallback((nextPreference: ThemePreference) => {
+    const storedPreference = serializeThemePreference(nextPreference);
+
+    if (storedPreference) {
+      window.localStorage.setItem("theme", storedPreference);
+    } else {
+      window.localStorage.removeItem("theme");
+    }
+
+    setThemePreference(nextPreference);
+  }, []);
+
+  return { preference, setTheme, theme };
 }

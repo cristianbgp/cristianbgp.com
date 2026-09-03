@@ -1,15 +1,19 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import {
   motion,
+  useMotionValueEvent,
   useReducedMotion,
   useScroll,
   useTransform,
 } from "motion/react";
 
 import { CommandKeyTrigger } from "@/components/AppCommand";
-import { getStickyPageHeaderProgress } from "@/lib/page-header";
+import {
+  getStickyPageHeaderPadding,
+  getStickyPageHeaderProgress,
+} from "@/lib/page-header";
 
 type StickyPageTitleProps = {
   title: string;
@@ -18,6 +22,8 @@ type StickyPageTitleProps = {
 export const StickyPageTitle = memo(function StickyPageTitle({
   title,
 }: StickyPageTitleProps) {
+  const titleContainerRef = useRef<HTMLElement>(null);
+  const pageHeaderRef = useRef<HTMLElement | null>(null);
   const reduceMotion = useReducedMotion();
   const { scrollY } = useScroll();
   const progress = useTransform(scrollY, (scrollTop) =>
@@ -25,6 +31,7 @@ export const StickyPageTitle = memo(function StickyPageTitle({
   );
   const titleScale = useTransform(progress, [0, 1], [1, 0.72]);
   const titleY = useTransform(progress, [0, 1], [0, 14]);
+  const headerPadding = useTransform(progress, getStickyPageHeaderPadding);
   const hintOpacity = useTransform(progress, [0, 0.55], [1, 0]);
   const hintY = useTransform(progress, [0, 1], [0, -6]);
   const hintVisibility = useTransform(progress, (value) =>
@@ -34,8 +41,32 @@ export const StickyPageTitle = memo(function StickyPageTitle({
     value >= 0.2 ? "none" : "auto",
   );
 
+  useEffect(() => {
+    const pageHeader = titleContainerRef.current?.closest<HTMLElement>(
+      "[data-page-header]",
+    );
+    pageHeaderRef.current = pageHeader ?? null;
+    pageHeader?.style.setProperty(
+      "--page-header-padding-y",
+      `${headerPadding.get()}px`,
+    );
+
+    return () => {
+      pageHeader?.style.removeProperty("--page-header-padding-y");
+      pageHeaderRef.current = null;
+    };
+  }, [headerPadding]);
+
+  useMotionValueEvent(headerPadding, "change", (value) => {
+    pageHeaderRef.current?.style.setProperty(
+      "--page-header-padding-y",
+      `${value}px`,
+    );
+  });
+
   return (
     <header
+      ref={titleContainerRef}
       className="relative mx-auto flex h-20 w-full max-w-2xl justify-center px-6 pt-1"
       data-sticky-page-title
     >

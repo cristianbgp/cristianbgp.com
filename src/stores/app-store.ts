@@ -10,14 +10,36 @@ export function toggleCommandOpen() {
   $isCommandOpen.set(!$isCommandOpen.get());
 }
 
-type Theme = "theme-light" | "dark" | "system";
+export type ThemePreference = "light" | "dark" | "system";
+export type ResolvedTheme = Exclude<ThemePreference, "system">;
 
-export const $theme = atom<Theme>("theme-light");
+export function parseThemePreference(value: string | null): ThemePreference {
+  return value === "dark" || value === "light" ? value : "system";
+}
 
-export function setTheme(value: Theme) {
+export function resolveTheme(
+  preference: ThemePreference,
+  systemIsDark: boolean,
+): ResolvedTheme {
+  if (preference === "system") {
+    return systemIsDark ? "dark" : "light";
+  }
+
+  return preference;
+}
+
+export function serializeThemePreference(
+  preference: ThemePreference,
+): ResolvedTheme | null {
+  return preference === "system" ? null : preference;
+}
+
+export const $theme = atom<ThemePreference>("system");
+
+export function setTheme(value: ThemePreference) {
   $theme.set(value);
 }
 
 export function toggleTheme() {
-  $theme.set($theme.get() === "dark" ? "theme-light" : "dark");
+  $theme.set($theme.get() === "dark" ? "light" : "dark");
 }

@@ -9,7 +9,8 @@ const { title } = Astro.props;
 ---
 
 <div
-  class="sticky top-0 z-30 w-full bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75"
+  class="sticky top-0 z-30 w-full py-[var(--page-header-padding-y)] bg-background/90 backdrop-blur-md supports-[backdrop-filter]:bg-background/75"
+  style="--page-header-padding-y: 1.25rem"
   data-page-header
 >
   <StickyPageTitle client:load title={title} />
