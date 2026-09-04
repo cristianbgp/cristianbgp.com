@@ -6,8 +6,11 @@ const articlePostSource = readFileSync(
   "utf8",
 );
 
-test("enhances every rendered article code block with copy controls", () => {
+test("enhances code blocks with a browser-only copy control", () => {
   expect(articlePostSource).toContain(
+    '<ArticleCodeCopyButtons client:only="react" lang={lang} />',
+  );
+  expect(articlePostSource).not.toContain(
     '<ArticleCodeCopyButtons client:load lang={lang} />',
   );
 });
