@@ -1,0 +1,87 @@
+---
+title: "Mi stack actual"
+description: "Las herramientas que más repito al empezar un proyecto y cuándo prefiero usar algo distinto"
+date: "2026-09-06T00:00:00.000Z"
+published: true
+tags: ["tech stack", "typescript", "react", "hono", "drizzle"]
+lang: "es"
+---
+import FaviconLink from "@/components/FaviconLink";
+
+Actualmente uso <FaviconLink href="https://www.typescriptlang.org/" external>TypeScript</FaviconLink> y <FaviconLink href="https://bun.sh/" external>Bun</FaviconLink> como base para la mayoría de mis proyectos. Para aplicaciones web suelo elegir <FaviconLink href="https://react.dev/" external>React</FaviconLink> con <FaviconLink href="https://vite.dev/" external>Vite</FaviconLink>, <FaviconLink href="https://reactrouter.com/" external>React Router</FaviconLink> y <FaviconLink href="https://tanstack.com/query/latest" external>TanStack Query</FaviconLink>. Construyo la UI con <FaviconLink href="https://tailwindcss.com/" external>Tailwind CSS</FaviconLink>, <FaviconLink href="https://ui.shadcn.com/" external>shadcn/ui</FaviconLink> y <FaviconLink href="https://www.radix-ui.com/" external>Radix UI</FaviconLink>.
+
+En el backend uso <FaviconLink href="https://hono.dev/" external>Hono</FaviconLink> y <FaviconLink href="https://zod.dev/" external>Zod</FaviconLink>. Cuando necesito persistencia, mi primera opción es <FaviconLink href="https://www.postgresql.org/" external>PostgreSQL</FaviconLink> con <FaviconLink href="https://orm.drizzle.team/" external>Drizzle</FaviconLink>. Para autenticación estoy usando <FaviconLink href="https://better-auth.com/" external>Better Auth</FaviconLink>. Normalmente despliego el frontend en <FaviconLink href="https://developers.cloudflare.com/pages/" external>Cloudflare Pages</FaviconLink> y la API en <FaviconLink href="https://railway.com/" external>Railway</FaviconLink>.
+
+## TypeScript en casi todo
+
+<FaviconLink href="https://www.typescriptlang.org/" external>TypeScript</FaviconLink> es la parte más estable de mi stack. Lo uso en aplicaciones web, APIs, scripts, proyectos móviles e interfaces de terminal.
+
+Esto se nota más cuando la lógica deja de ser simple. En una aplicación móvil, por ejemplo, las reglas del juego viven en un motor escrito en <FaviconLink href="https://www.typescriptlang.org/" external>TypeScript</FaviconLink> puro. <FaviconLink href="https://reactnative.dev/" external>React Native</FaviconLink> no decide quién muere, quién vota o cuándo termina una partida. La interfaz envía comandos y el motor devuelve un nuevo estado con sus eventos. Puedo probar esas reglas sin abrir la aplicación.
+
+## Bun para el trabajo diario
+
+Uso <FaviconLink href="https://bun.sh/" external>Bun</FaviconLink> para instalar dependencias, ejecutar scripts y correr pruebas. También lo uso como runtime para APIs.
+
+Me gusta porque reduce bastante el tiempo que paso esperando comandos, pero no intento forzar toda la estructura del repositorio alrededor de él. En uno de mis monorepos, las aplicaciones conservan dependencias y lockfiles independientes. El package raíz coordina los comandos, mientras la API, el CLI y la web mantienen sus propios ciclos de instalación y deploy.
+
+La raíz me sirve para ejecutar el proyecto completo. Cada aplicación sigue pudiendo vivir por su cuenta.
+
+## React para aplicaciones web
+
+Mi punto de partida en frontend es <FaviconLink href="https://react.dev/" external>React</FaviconLink> con <FaviconLink href="https://vite.dev/" external>Vite</FaviconLink>. <FaviconLink href="https://reactrouter.com/" external>React Router</FaviconLink> se ocupa de las rutas y <FaviconLink href="https://tanstack.com/query/latest" external>TanStack Query</FaviconLink> de los datos que vienen del servidor.
+
+He usado stores globales muchas veces, pero ya no empiezo uno por costumbre. Si un dato pertenece al servidor, prefiero que <FaviconLink href="https://tanstack.com/query/latest" external>TanStack Query</FaviconLink> maneje su carga, caché e invalidación. <FaviconLink href="https://zustand.docs.pmnd.rs/" external>Zustand</FaviconLink> aparece cuando sí existe estado compartido que pertenece a la interfaz.
+
+Para estilos uso <FaviconLink href="https://tailwindcss.com/" external>Tailwind CSS</FaviconLink>. <FaviconLink href="https://ui.shadcn.com/" external>shadcn/ui</FaviconLink> y <FaviconLink href="https://www.radix-ui.com/" external>Radix UI</FaviconLink> me dan una buena base para componentes interactivos sin encerrarme en la apariencia de una librería. Normalmente termino modificando esos componentes dentro del proyecto, que es precisamente lo que me interesa de <FaviconLink href="https://ui.shadcn.com/" external>shadcn/ui</FaviconLink>.
+
+Después añado piezas más específicas cuando hacen falta: <FaviconLink href="https://sonner.emilkowal.ski/" external>Sonner</FaviconLink> para notificaciones toast, <FaviconLink href="https://github.com/dip/cmdk" external>cmdk</FaviconLink> para una paleta de comandos o <FaviconLink href="https://vaul.emilkowal.ski/" external>Vaul</FaviconLink> para un drawer. No instalo todas desde el inicio.
+
+## Hono para las APIs
+
+Después de trabajar con distintos frameworks de backend, <FaviconLink href="https://hono.dev/" external>Hono</FaviconLink> se convirtió en la opción que pruebo primero.
+
+Uso <FaviconLink href="https://zod.dev/" external>Zod</FaviconLink> en los límites de la aplicación. Valido las entradas HTTP, la configuración y las respuestas externas que no controlo. Esto último es especialmente importante en una API que consulta varios proveedores: cada uno devuelve datos diferentes y cualquiera puede cambiar su respuesta o dejar de funcionar.
+
+Cuando el frontend y la API se despliegan por separado, genero un documento <FaviconLink href="https://www.openapis.org/" external>OpenAPI</FaviconLink> desde las rutas de <FaviconLink href="https://hono.dev/" external>Hono</FaviconLink>. <FaviconLink href="https://orval.dev/" external>Orval</FaviconLink> usa ese documento para crear los clientes del frontend. Prefiero eso a escribir una función con <FaviconLink href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API" external>fetch</FaviconLink> y luego mantener sus tipos manualmente en otro lugar.
+
+No siempre necesito <FaviconLink href="https://www.openapis.org/" external>OpenAPI</FaviconLink>. En un monorepo uso <FaviconLink href="https://hono.dev/docs/guides/rpc" external>Hono RPC</FaviconLink> porque todas las aplicaciones pueden obtener los tipos directamente de `AppType`. La elección depende de qué tan independientes quiero que sean los consumidores de la API.
+
+## PostgreSQL y Drizzle
+
+Cuando necesito una base de datos, casi siempre empiezo con <FaviconLink href="https://www.postgresql.org/" external>PostgreSQL</FaviconLink>. <FaviconLink href="https://orm.drizzle.team/" external>Drizzle</FaviconLink> se encarga del esquema y las consultas, <FaviconLink href="https://orm.drizzle.team/docs/kit-overview" external>Drizzle Kit</FaviconLink> de las migraciones y <FaviconLink href="https://github.com/porsager/postgres" external>postgres.js</FaviconLink> de la conexión.
+
+Antes usaba <FaviconLink href="https://www.prisma.io/" external>Prisma</FaviconLink>. No tengo una gran historia sobre por qué cambié. Probé <FaviconLink href="https://orm.drizzle.team/" external>Drizzle</FaviconLink> en un proyecto, seguí usándolo en el siguiente y con el tiempo se volvió mi primera opción. Me gusta que el esquema y las consultas se sientan cerca de <FaviconLink href="https://www.postgresql.org/docs/current/sql.html" external>SQL</FaviconLink>, pero el cambio fue gradual, no una decisión tomada en un solo día.
+
+Para autenticación estoy usando <FaviconLink href="https://better-auth.com/" external>Better Auth</FaviconLink>. Lo conecto a <FaviconLink href="https://orm.drizzle.team/" external>Drizzle</FaviconLink> y ya lo he usado con organizaciones y <FaviconLink href="https://better-auth.com/docs/plugins/passkey" external>passkeys</FaviconLink>.
+
+Tampoco todos los proyectos necesitan esta parte del stack. Una API que solo consulta proveedores y normaliza sus respuestas puede funcionar sin base de datos. Una aplicación móvil offline-first puede guardar sus datos en <FaviconLink href="https://www.sqlite.org/" external>SQLite</FaviconLink> y funcionar sin backend. Añadir <FaviconLink href="https://www.postgresql.org/" external>PostgreSQL</FaviconLink> resolvería un problema que ninguno de los dos tiene.
+
+## Pruebas
+
+<FaviconLink href="https://vitest.dev/" external>Vitest</FaviconLink> es mi opción habitual para frontend y backend. En <FaviconLink href="https://react.dev/" external>React</FaviconLink> lo uso con <FaviconLink href="https://testing-library.com/" external>Testing Library</FaviconLink> y <FaviconLink href="https://github.com/jsdom/jsdom" external>jsdom</FaviconLink>. Para la API prefiero probar servicios y endpoints completos cuando el costo sigue siendo razonable.
+
+Si una prueba depende del comportamiento real de <FaviconLink href="https://www.postgresql.org/" external>PostgreSQL</FaviconLink>, uso <FaviconLink href="https://pglite.dev/" external>PGlite</FaviconLink>. Me permite cubrir consultas, restricciones y transacciones sin reemplazar la base de datos por mocks que se comportan de otra manera.
+
+Algunos de mis proyectos usan el runner de <FaviconLink href="https://bun.sh/docs/test" external>Bun</FaviconLink>. No me preocupa que todos los repos tengan exactamente la misma herramienta. Me importa más poder probar la lógica sin montar media aplicación para llegar a ella.
+
+## Deploy
+
+Suelo desplegar el frontend en <FaviconLink href="https://developers.cloudflare.com/pages/" external>Cloudflare Pages</FaviconLink> y la API en <FaviconLink href="https://railway.com/" external>Railway</FaviconLink>. <FaviconLink href="https://www.postgresql.org/" external>PostgreSQL</FaviconLink> también corre como un servicio administrado en <FaviconLink href="https://railway.com/" external>Railway</FaviconLink>.
+
+Mantengo el frontend y el backend separados porque quiero desplegarlos de forma independiente. Comparten un contrato generado, no un proceso de deploy. <FaviconLink href="https://railway.com/" external>Railway</FaviconLink> construye la API con <FaviconLink href="https://bun.sh/" external>Bun</FaviconLink> mediante <FaviconLink href="https://railpack.com/" external>Railpack</FaviconLink>, así que por ahora no necesito mantener un <FaviconLink href="https://docs.docker.com/reference/dockerfile/" external>Dockerfile</FaviconLink>.
+
+Una API sin base de datos encaja mejor en <FaviconLink href="https://developers.cloudflare.com/workers/" external>Cloudflare Workers</FaviconLink> cuando depende de cachés de <FaviconLink href="https://www.cloudflare.com/" external>Cloudflare</FaviconLink>.
+
+## Cuando el proyecto pide otra cosa
+
+No quiero que cada proyecto nuevo repita exactamente esta combinación.
+
+En una aplicación móvil offline-first uso <FaviconLink href="https://expo.dev/" external>Expo</FaviconLink>, <FaviconLink href="https://reactnative.dev/" external>React Native</FaviconLink>, <FaviconLink href="https://www.sqlite.org/" external>SQLite</FaviconLink> y <FaviconLink href="https://docs.swmansion.com/react-native-reanimated/" external>Reanimated</FaviconLink>. Las partidas deben continuar aunque no exista conexión, así que el estado importante vive en el dispositivo. En ese proyecto no uso <FaviconLink href="https://tailwindcss.com/" external>Tailwind CSS</FaviconLink>, <FaviconLink href="https://tanstack.com/query/latest" external>TanStack Query</FaviconLink>, <FaviconLink href="https://hono.dev/" external>Hono</FaviconLink> ni <FaviconLink href="https://better-auth.com/" external>Better Auth</FaviconLink>.
+
+También hice una web con <FaviconLink href="https://www.solidjs.com/" external>SolidJS</FaviconLink> y <FaviconLink href="https://docs.solidjs.com/solid-start/v2" external>SolidStart</FaviconLink> porque quería probar <FaviconLink href="https://www.solidjs.com/" external>SolidJS</FaviconLink> en algo pequeño. Me gustó trabajar con él, pero por ahora <FaviconLink href="https://react.dev/" external>React</FaviconLink> sigue siendo la opción con la que empezaría una aplicación web.
+
+En otro proyecto uso <FaviconLink href="https://astro.build/" external>Astro</FaviconLink> para el sitio público y <FaviconLink href="https://react.dev/" external>React</FaviconLink> con <FaviconLink href="https://vite.dev/" external>Vite</FaviconLink> para el panel administrativo. También es donde <FaviconLink href="https://hono.dev/docs/guides/rpc" external>Hono RPC</FaviconLink> tiene más sentido que <FaviconLink href="https://www.openapis.org/" external>OpenAPI</FaviconLink>. Son decisiones que nacen de cómo están relacionadas las aplicaciones, no de una regla que quiera aplicar en todas partes.
+
+Algunas exploraciones se quedan en un solo proyecto. Otras empiezan así y terminan formando parte de lo que uso siempre. <FaviconLink href="https://orm.drizzle.team/" external>Drizzle</FaviconLink> pasó por ese recorrido. <FaviconLink href="https://www.solidjs.com/" external>SolidJS</FaviconLink> todavía no.
+
+Ahora mismo empezaría una aplicación web con esta base y quitaría piezas antes de añadir otras. No necesito que todos mis proyectos usen las mismas herramientas. Me basta con tener un punto de partida que conozco bien y poder cambiarlo cuando el producto lo justifica.
