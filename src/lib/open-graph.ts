@@ -45,7 +45,7 @@ type OpenGraphToolInput = {
 
 const CORE_PAGE_CARDS: OpenGraphCardDefinition[] = [
   {
-    description: "Personal website of software engineer Cristian Granda.",
+    description: "Software Engineer. Things I build, use, and write about.",
     kind: "page",
     path: "/",
     section: "Home",
