@@ -116,6 +116,14 @@ date: "2026-01-01"
 
 The URL may point to a route in this project or to an external website. Internal interactive tools also need a page in `src/pages/tools/` and their React component in `src/components/`.
 
+## Markdown article URLs
+
+Append `.md` to an article path, for example `/articles/mi-stack-actual.md`, to read its Markdown version. These files are generated during the build; drafts are available only in development, following the same visibility rules as the HTML pages.
+
+The export includes the title, description, publication date and language. MDX imports are removed, `FaviconLink` becomes a regular link, `FileTree` becomes a text code block, and imported images and videos use public asset URLs. Code examples are preserved. New custom MDX components need a conversion in `src/lib/article-markdown.ts`.
+
+The development endpoint returns `text/markdown; charset=utf-8`. `public/_headers` sets the same header on hosts supporting that file, such as Cloudflare Pages and Netlify. Other static hosts need an equivalent Content-Type rule for `/articles/*.md`.
+
 ## Resume
 
 Resume content is stored in `src/lib/resume.json` and rendered by `src/components/ResumeViewer.astro`. Update the JSON data to change work experience, skills, education, languages, or profile links.

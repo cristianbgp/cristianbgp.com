@@ -38,12 +38,15 @@
     "radix-ui": "^1.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
     "satori": "0.33.4",
     "sharp": "^0.34.2",
     "sonner": "^2.0.5",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.10",
     "typescript": "^5.8.3",
+    "unified": "^11.0.5",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
