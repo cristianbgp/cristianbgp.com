@@ -3,19 +3,14 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import PageHeader from "@/components/PageHeader.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
-import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
-import { getDestinationLabel, isExternalUrl } from "@/lib/navigation";
+import { ExternalLinkIcon, HouseIcon } from "lucide-react";
+import { isExternalUrl } from "@/lib/navigation";
 
 const tools = (await getCollection("tools")).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+  (a, b) =>
+    b.data.date.valueOf() - a.data.date.valueOf() ||
+    a.data.title.localeCompare(b.data.title),
 );
-const internalTools = tools.filter((tool) => !isExternalUrl(tool.data.url));
-const externalTools = tools.filter((tool) => isExternalUrl(tool.data.url));
-
-const groups = [
-  { title: "On this site", tools: internalTools },
-  { title: "Elsewhere", tools: externalTools },
-].filter((group) => group.tools.length > 0);
 ---
 
 <Layout
@@ -26,30 +21,20 @@ const groups = [
     class="relative z-10 flex min-h-svh w-full flex-col items-center justify-start pb-10 pointer-events-auto"
   >
     <PageHeader title="Tools" />
-    <div class="mx-auto w-full max-w-2xl space-y-12 px-6 pb-16 pt-10">
+    <div class="mx-auto w-full max-w-2xl px-6 pb-16 pt-10">
       {
         tools.length === 0 ? (
           <p class="text-center text-2xl font-bold">Soon…</p>
         ) : (
-          groups.map((group) => (
-            <section aria-labelledby={`tools-${group.title.toLowerCase().replaceAll(" ", "-")}`}>
-              <div class="mb-3 flex items-baseline justify-between gap-4">
-                <h2
-                  id={`tools-${group.title.toLowerCase().replaceAll(" ", "-")}`}
-                  class="text-sm font-medium text-muted-foreground"
-                >
-                  {group.title}
-                </h2>
-                <span class="text-xs tabular-nums text-muted-foreground">
-                  {group.tools.length}
-                </span>
-              </div>
-              <ul class="rounded-xl border bg-background/25 px-4 sm:px-5">
-                {group.tools.map((tool) => {
+              <ul aria-label="Tools">
+                {tools.map((tool) => {
                   const isExternal = isExternalUrl(tool.data.url);
-                  const DirectionIcon = isExternal
-                    ? ArrowUpRightIcon
-                    : ArrowRightIcon;
+                  const DestinationIcon = isExternal
+                    ? ExternalLinkIcon
+                    : HouseIcon;
+                  const destination = isExternal
+                    ? "External site (opens in a new tab)"
+                    : "On this site";
 
                   return (
                     <li class="border-b last:border-b-0">
@@ -60,20 +45,22 @@ const groups = [
                         class="group grid min-h-28 grid-cols-[1fr_auto] gap-x-5 gap-y-3 rounded-md py-5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background sm:min-h-24 sm:grid-cols-[1fr_auto]"
                       >
                         <div class="min-w-0">
-                          <h3 class="text-xl font-bold tracking-tight transition-transform duration-200 group-hover:translate-x-1 group-focus-visible:translate-x-1">
+                          <h2 class="text-xl font-bold tracking-tight">
                             {tool.data.title}
-                          </h3>
+                          </h2>
                           <p class="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
                             {tool.data.description}
                           </p>
                         </div>
-                        <DirectionIcon
-                          aria-hidden="true"
-                          className="mt-1 size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-focus-visible:translate-x-0.5 group-focus-visible:-translate-y-0.5 group-focus-visible:text-foreground"
-                          strokeWidth={1.75}
-                        />
-                        <div class="col-span-2 flex items-center justify-between gap-4 text-xs text-muted-foreground sm:col-span-1">
-                          <span>{getDestinationLabel(tool.data.url)}</span>
+                        <span title={destination} class="flex size-8 items-center justify-center text-muted-foreground group-hover:text-foreground group-focus-visible:text-foreground">
+                          <DestinationIcon
+                            aria-hidden="true"
+                            className="size-4"
+                            strokeWidth={1.75}
+                          />
+                          <span class="sr-only">{destination}</span>
+                        </span>
+                        <div class="col-span-2 text-xs text-muted-foreground">
                           <FormattedDate date={tool.data.date} locale="en" />
                         </div>
                       </a>
@@ -81,8 +68,6 @@ const groups = [
                   );
                 })}
               </ul>
-            </section>
-          ))
         )
       }
     </div>
