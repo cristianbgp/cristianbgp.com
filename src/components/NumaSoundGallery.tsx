@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PauseIcon, PlayIcon } from "lucide-react";
+import { LoaderCircleIcon, PauseIcon, PlayIcon } from "lucide-react";
 import SoundOrb from "./SoundOrb";
 import { numaSamples } from "@/lib/numa-samples";
 
@@ -91,17 +91,15 @@ export default function NumaSoundGallery() {
                 aria-busy={selected && loading}
                 className="group relative size-16 shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
               >
-                <span
-                  className={`block size-full ${selected && loading ? "sound-loading__orb" : ""}`}
-                >
-                  <SoundOrb
-                    id={sample.id}
-                    animated={selected && playing}
-                    className="size-full motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-[1.02] motion-safe:group-active:scale-[0.98]"
-                  />
-                </span>
+                <SoundOrb
+                  id={sample.id}
+                  animated={selected && playing}
+                  className="size-full motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-[1.02] motion-safe:group-active:scale-[0.98]"
+                />
                 <span className="pointer-events-none absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full border border-border bg-background text-foreground">
-                  {engaged ? (
+                  {selected && loading ? (
+                    <LoaderCircleIcon aria-hidden="true" className="size-3 motion-safe:animate-spin" />
+                  ) : engaged ? (
                     <PauseIcon aria-hidden="true" className="size-3" />
                   ) : (
                     <PlayIcon aria-hidden="true" className="size-3" />
@@ -133,9 +131,10 @@ export default function NumaSoundGallery() {
       />
       <p
         role="status"
-        className="mt-3 text-center text-xs text-muted-foreground"
+        className="mt-3 min-h-10 text-center text-xs leading-5 text-muted-foreground"
       >
-        {error || (loading ? "Loading sound…" : "")}
+        {error}
+        <span className="sr-only">{!error && loading ? "Loading sound…" : ""}</span>
       </p>
     </section>
   );
