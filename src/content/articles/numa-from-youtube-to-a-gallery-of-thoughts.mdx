@@ -1,0 +1,60 @@
+---
+title: "numa: thoughts, heard differently"
+description: "A public gallery where short thoughts become twelve seconds of music"
+date: "2026-09-18T00:00:00.000Z"
+published: false
+tags: ["numa", "music", "side projects", "ai"]
+lang: "en"
+---
+
+import FaviconLink from "@/components/FaviconLink";
+import NumaSoundGallery from "@/components/NumaSoundGallery";
+import { Image } from "astro:assets";
+import numaYoutubeChannel from "../../assets/numa/numa-yt-channel.png";
+import numaHowItSounds from "../../assets/numa/numa-how-it-sounds.png";
+
+With <FaviconLink href="https://numa.channel/how-it-sounds" external>numa</FaviconLink>, you can write a thought and hear it turned into twelve seconds of music. Each one becomes a small orb in a public gallery, where other people can listen.
+
+The idea grew out of a <FaviconLink href="https://www.youtube.com/@numa.000" external>YouTube channel I started</FaviconLink> for minimalist lo-fi sound journals. Each numbered release brings together ten tracks and a continuous mix around a feeling or a moment. Later, I wanted to let other people bring their own thoughts into it. That became How It Sounds.
+
+<Image
+  src={numaYoutubeChannel}
+  alt="The numa YouTube channel with numbered sound journals and gradient artwork"
+  widths={[640, 960, 1280]}
+  sizes="(max-width: 768px) 100vw, 672px"
+/>
+
+## A thought, then a sound
+
+The page asks one question: “What is on your mind?”
+
+You have up to 240 characters to answer. It could be a memory, something bothering you, or a thought you haven't quite finished.
+
+<Image
+  src={numaHowItSounds}
+  alt="How It Sounds with the thought 'the first warm evening after a long winter' entered and a notice that the thought and sound will be public"
+  widths={[640, 960, 1280]}
+  sizes="(max-width: 768px) 100vw, 672px"
+/>
+
+<FaviconLink href="https://elevenlabs.io/blog/eleven-music-now-available-in-the-api#get-started-today" external>ElevenLabs Music</FaviconLink> generates an instrumental from what you write. The direction I give the model is to interpret the feeling behind the words. A thought about an empty room might carry loneliness, relief, or the discomfort of leaving somewhere familiar. The result should respond to that feeling, rather than just make a sound associated with a room.
+
+There is room for interpretation here. I don't expect a model to know exactly what someone meant. Part of the experience is hearing what comes back and deciding how it relates to what you wrote.
+
+## Why a gallery
+
+The memory orbs in *Inside Out* were another inspiration. I liked the idea of a memory becoming something you could see, and of many of those memories forming a collection. That influenced the gallery in How It Sounds: each orb holds someone's thought and a short piece of music you can play.
+
+You can play a sound directly from its orb, or open its page to share it or download the audio.
+
+<NumaSoundGallery client:visible />
+
+That shared space is what interested me about extending the channel. Someone leaves a sentence, and another person can come across it later and hear its interpretation. The collection grows from what people choose to share.
+
+There are no accounts or private entries. The page tells you before submitting that your thought and its sound will be public. That matters for a prompt that invites people to write something personal.
+
+## Try it
+
+You can listen to the longer <FaviconLink href="https://numa.channel/mixes" external>sound journals</FaviconLink>, or leave a thought in <FaviconLink href="https://numa.channel/how-it-sounds" external>How It Sounds</FaviconLink>.
+
+I'm curious about the sentences people choose when they only have a small space to write, and what it feels like to hear those sentences turned into music.

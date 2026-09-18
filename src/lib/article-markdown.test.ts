@@ -4,6 +4,13 @@ import { articleBodyToMarkdown, buildArticleMarkdown } from "./article-markdown"
 const options = { articleUrl: "https://cristianbgp.com/articles/example" };
 
 describe("article Markdown export", () => {
+  test("keeps the interactive numa samples available as audio links", () => {
+    const markdown = articleBodyToMarkdown("<NumaSoundGallery client:visible />", options);
+    expect(markdown.split("\n")).toHaveLength(8);
+    expect(markdown).toContain("[a guitar solo](https://media.numa.channel/");
+    expect(markdown).toContain("[the day I met my cat](https://media.numa.channel/");
+    expect(markdown).not.toContain("NumaSoundGallery");
+  });
   test("converts live links but preserves imports and JSX inside code examples", () => {
     const example = '```tsx\nimport FaviconLink from "./FaviconLink";\n<FaviconLink href="https://react.dev/">React</FaviconLink>\n```';
     const source = 'import FaviconLink from "./FaviconLink";\n\n- <FaviconLink href="https://react.dev/" external>React</FaviconLink>\n\n' + example;

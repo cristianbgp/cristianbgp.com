@@ -2,6 +2,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkMdx from "remark-mdx";
 import ts from "typescript";
+import { numaSamples } from "./numa-samples";
 
 type Node = {
   type: string;
@@ -90,6 +91,9 @@ export function articleBodyToMarkdown(
       throw new Error("Add a Markdown representation for this MDX expression");
     }
     if (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") {
+      if (node.name === "NumaSoundGallery") {
+        return numaSamples.map((sample) => `- [${sample.thought}](${sample.audioUrl})`).join("\n");
+      }
       if (node.name === "FaviconLink") return `[${children()}](${attr(node, "href")})`;
       if (node.name === "Image" || node.name === "img") return `![${attr(node, "alt")}](${attr(node, "src")})`;
       if (node.name === "FileTree") {
