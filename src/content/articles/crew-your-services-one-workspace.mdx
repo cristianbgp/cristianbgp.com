@@ -8,12 +8,29 @@ lang: "en"
 ---
 
 import FaviconLink from "@/components/FaviconLink";
+import crewDemoVideo from "../../assets/crew/crew-demo-terminal.mp4?url";
+import crewDemoPoster from "../../assets/crew/crew-demo-terminal-poster.webp";
 
 I made <FaviconLink href="https://github.com/cristianbgp/crew" external>crew</FaviconLink> to run my local services together and keep their terminals in one place.
 
 I used to start everything one by one, usually in separate tabs. I liked <FaviconLink href="https://turborepo.dev/docs/crafting-your-repository/developing-applications#using-the-terminal-ui" external>Turborepo's terminal UI</FaviconLink>: having the running tasks together and switching between their output. Later, I started using <FaviconLink href="https://github.com/pvolok/mprocs" external>mprocs</FaviconLink> in my personal projects.
 
 crew grew out of those ideas. I wanted something tailored to how I work, including projects where the frontend and backend live in different repositories. I made it public in case it's useful to someone else too.
+
+<video
+  controls
+  muted
+  playsInline
+  preload="metadata"
+  width="1920"
+  height="1080"
+  poster={crewDemoPoster.src}
+  className="w-full rounded-xl"
+  aria-label="crew demo showing service terminals and workspace navigation"
+>
+  <source src={crewDemoVideo} type="video/mp4" />
+  Your browser cannot play this video.
+</video>
 
 ## Your commands, together
 
