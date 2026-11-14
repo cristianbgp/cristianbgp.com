@@ -1,0 +1,124 @@
+---
+title: "Make your first game with tynt"
+description: "Build a small TypeScript cartridge for a four-color browser console, then share it in the public gallery"
+date: "2026-11-13T12:00:00.000Z"
+published: true
+tags: ["tynt", "typescript", "game development", "open source"]
+lang: "en"
+---
+
+import FaviconLink from "@/components/FaviconLink";
+
+<FaviconLink href="https://tynt.dev" external>tynt</FaviconLink> is a small game console I built for making games in the browser. It has a 160 × 144 screen, four grayscale colors, and six buttons: four directions, A, and B.
+
+A game is a TypeScript program called a cartridge. You can write one in the editor, run it, and save it locally without setting up a project. The resolution, controls, and drawing API are already decided. I like having those constraints when the goal is to try a game idea.
+
+## Three functions
+
+Every cartridge exports the same lifecycle:
+
+```ts
+export function init(): void {}
+export function update(): void {}
+export function draw(): void {}
+```
+
+`init()` prepares the initial state. `update()` handles input and changes that state. `draw()` describes what should appear on screen.
+
+The console supplies functions such as `button`, `rect`, and `text` directly. Cartridges don't import packages. The <FaviconLink href="https://docs.tynt.dev" external>documentation</FaviconLink> describes the available API, which also feeds the editor's autocomplete.
+
+## Make something playable
+
+Open <FaviconLink href="https://tynt.dev/editor" external>the editor</FaviconLink> and replace the cartridge source with this example. Save or export any existing work you want to keep first.
+
+```ts
+let x = 20;
+let y = 68;
+let targetX = 112;
+let targetY = 68;
+let score = 0;
+
+export function init(): void {
+  x = 20;
+  y = 68;
+  targetX = 112;
+  targetY = 68;
+  score = 0;
+}
+
+export function update(): void {
+  if (buttonPressed("a")) {
+    init();
+    return;
+  }
+
+  if (button("left")) x -= 2;
+  if (button("right")) x += 2;
+  if (button("up")) y -= 2;
+  if (button("down")) y += 2;
+
+  x = Math.max(0, Math.min(152, x));
+  y = Math.max(14, Math.min(136, y));
+
+  const touching =
+    x < targetX + 8 && x + 8 > targetX &&
+    y < targetY + 8 && y + 8 > targetY;
+
+  if (touching) {
+    score += 1;
+    targetX = (targetX + 53) % 153;
+    targetY = 14 + ((targetY - 14 + 37) % 123);
+  }
+}
+
+export function draw(): void {
+  clear(0);
+  text("SCORE " + score, 4, 4, 3);
+  rect(targetX, targetY, 8, 8, 2, true);
+  rect(x, y, 8, 8, 3, true);
+}
+```
+
+Press **Run** or **Control + Shift + Enter**. The preview receives focus automatically. Use the arrow keys to move the white square onto the gray square and score a point. Press the console's A button, or **Z** on your keyboard, to start over. The keyboard mapping is Z for A and X for B.
+
+The movement checks whether a direction is held. Reset uses `buttonPressed`, which is true only on the update where the press begins. Holding A won't keep resetting the game.
+
+The collision check compares two rectangles. After a hit, the target moves through a fixed sequence of positions. There's no random placement to debug yet. The coordinate limits leave room for the score and keep both squares inside the screen.
+
+In `draw()`, the numbers `0` through `3` are palette indices, from black to white. `clear(0)` clears the previous frame; the two `rect()` calls draw filled squares. Try changing the movement speed or adding a second target before making the game larger.
+
+## What happens when you run it
+
+Editor changes and local cartridges compile in the browser with `esbuild-wasm`. Public gallery games are compiled during the gallery build, so playing them doesn't require downloading the browser compiler. Each run gets a disposable Web Worker inside a sandboxed iframe, where the cartridge executes.
+
+The runtime targets 60 updates per second in fixed steps of `1000 / 60` milliseconds. It uses elapsed time from `requestAnimationFrame` to decide how many updates are needed, rather than assuming every monitor refreshes at 60 Hz. Catch-up is limited to five updates, with only one worker tick outstanding at a time. Slow devices may run fewer updates instead of building a queue of stale frames.
+
+Hiding the tab pauses gameplay and audio. Returning resumes the game unless you had paused it manually.
+
+That means `x += 2` moves two pixels per simulation step. You don't multiply it by a browser frame delta. For timers and randomness, the console provides frame-based helpers and a seeded random API.
+
+Drawing also passes through the host. Calling `rect()` adds a command to a buffer; it doesn't give the cartridge direct access to a canvas. The host validates the commands and renders them into a 23,040-pixel indexed framebuffer, then maps those palette indices to RGBA for display.
+
+This boundary lets the host control rendering and check what a cartridge sends. The sandbox also restricts browser capabilities, and watchdogs terminate runs that stop responding. These are layers of protection for running contributed code, not a guarantee that arbitrary JavaScript is harmless.
+
+## Save it and share it
+
+Your local library lives in IndexedDB on the current browser and device. Export a `.tynt` file if you want a portable copy. It contains readable JSON with the TypeScript source and metadata such as the title, author, and controls.
+
+The public <FaviconLink href="https://tynt.dev/gallery" external>gallery</FaviconLink> comes from the Git repository. To submit a game, copy `cartridges/_template` to a directory for your game and include:
+
+```text
+cartridges/your-game/
+├── game.tynt
+├── cartridge.json
+├── cover.png
+└── README.md
+```
+
+`README.md` is optional. When present, it appears on the game's page; otherwise, the page uses the cartridge description.
+
+The cover is a 320 × 288 nearest-neighbor capture of the game canvas. You can download one from the editor's **Debugger**. Complete the metadata, including the publication date and MIT license declaration, then install the repository dependencies with `bun run install:all`, run `bun run check` from the repository root, and open a pull request. Submit only source and artwork you can distribute under MIT.
+
+Validation checks the cartridge format, compiles its source, and checks its publishing metadata and cover. The catalog generator discovers cartridge directories automatically, so there is no separate registry to edit. After review and merge, the game is published in the gallery. Submit your cartridge directory, not the generated catalog or compiled assets. The <FaviconLink href="https://docs.tynt.dev/docs/publishing" external>publishing guide</FaviconLink> covers the full process.
+
+I'd like to see what other people make with these limits. A short puzzle or a game with one good mechanic is enough to start. You can <FaviconLink href="https://tynt.dev/editor" external>open the editor</FaviconLink>, look through the <FaviconLink href="https://github.com/cristianbgp/tynt" external>source</FaviconLink>, or change the example above into something of your own.
