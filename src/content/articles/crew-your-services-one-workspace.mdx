@@ -1,0 +1,107 @@
+---
+title: "crew: your services, one workspace"
+description: "A terminal workspace I built to run my local development services together"
+date: "2026-11-14T12:00:00.000Z"
+published: true
+tags: ["crew", "developer tools", "terminal", "open source"]
+lang: "en"
+---
+
+import FaviconLink from "@/components/FaviconLink";
+
+I made <FaviconLink href="https://github.com/cristianbgp/crew" external>crew</FaviconLink> to run my local services together and keep their terminals in one place.
+
+I used to start everything one by one, usually in separate tabs. I liked <FaviconLink href="https://turborepo.dev/docs/crafting-your-repository/developing-applications#using-the-terminal-ui" external>Turborepo's terminal UI</FaviconLink>: having the running tasks together and switching between their output. Later, I started using <FaviconLink href="https://github.com/pvolok/mprocs" external>mprocs</FaviconLink> in my personal projects.
+
+crew grew out of those ideas. I wanted something tailored to how I work, including projects where the frontend and backend live in different repositories. I made it public in case it's useful to someone else too.
+
+## Your commands, together
+
+You define the services in a `crew.toml` using the commands you already run:
+
+```toml
+name = "my-workspace"
+
+[services.web]
+repo = "product"
+cwd = "./apps/web"
+command = "bun run dev"
+
+[services.api]
+repo = "product"
+cwd = "./apps/api"
+command = "bun run dev"
+
+[services.worker]
+repo = "background"
+cwd = "../another-repository"
+command = "bun run dev"
+autostart = false
+```
+
+Then run:
+
+```sh
+crew
+```
+
+Each service has its own interactive terminal. You select it from the sidebar to see its output, type into a prompt, or restart it without stopping everything else.
+
+Paths resolve relative to `crew.toml`, so a workspace can include directories inside a monorepo or neighboring repositories. The `repo` field just groups services visually. It doesn't perform Git operations.
+
+In this example, the frontend and API start automatically. The worker waits until you start it yourself. These happen to be Bun commands, but you can use whatever your services normally run.
+
+You can also add and edit services from the interface, search their output, and configure startup dependencies when one service needs to wait for another.
+
+## How it's built
+
+crew is written in TypeScript, using Bun, React and <FaviconLink href="https://github.com/anomalyco/opentui" external>OpenTUI</FaviconLink>.
+
+React describes the terminal interface. OpenTUI provides the embedded terminal component, including input, selection and scrollback. Each service runs through a pseudoterminal, or PTY, so you can interact with the process rather than just read its logs.
+
+Running commands across repositories means being careful about which environment each process receives. crew avoids loading the workspace directory's dotenv files into itself. Each service starts in its own working directory and lets its framework load the environment as usual. Variables you've already exported are still inherited.
+
+Stopping processes needs care too. When you quit crew, it shuts down the services and process groups it started. Watching only the original command isn't enough, because that command can exit while its children keep running. Normal shutdown gives them five seconds before forcing remaining owned process groups to exit.
+
+I also added a browser preview while working on the interface. It runs the actual CLI inside a PTY and displays it through xterm.js, which made resizing and checking the UI easier. That's development tooling; the terminals inside crew itself use OpenTUI.
+
+## Give it a try
+
+You can open a demo without creating a configuration:
+
+```sh
+npx --package @cristianbgp/crew@latest crew demo
+```
+
+If you want to keep it around, install it globally and run it from a directory with a `crew.toml`:
+
+```sh
+npm install -g @cristianbgp/crew@latest
+crew
+```
+
+Or add it as a dev dependency so the version stays with your project:
+
+```sh
+npm install --save-dev @cristianbgp/crew@latest
+```
+
+Add a script to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev:all": "crew"
+  }
+}
+```
+
+Then use `npm run dev:all` to start the workspace.
+
+The npm launcher needs Node.js 22 or later. crew includes its own runtime, so you don't need Bun installed unless your service commands use it.
+
+crew supports macOS and Linux with glibc, on ARM64 and x64. It's meant for local development in the foreground, not for keeping services running after you close the workspace.
+
+The <FaviconLink href="https://github.com/cristianbgp/crew" external>code and documentation</FaviconLink> are public under MIT. There's also an optional <FaviconLink href="https://github.com/cristianbgp/agent-skills/tree/main/skills/crew" external>crew skill</FaviconLink> to help coding assistants configure it for your projects.
+
+If you try it, let me know what works for your setup and what you'd change.
